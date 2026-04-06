@@ -14,11 +14,20 @@ final class FillerFilterTests: XCTestCase {
         XCTAssertEqual(filter.filter("I uh went to the store"), "I went to the store")
     }
 
-    func testRemovesMultipleFillers() {
+    func testRemovesMultipleUnconditionalFillers() {
+        // "like" after "I" is kept (could be verb), but um/uh are always removed
         XCTAssertEqual(
-            filter.filter("Um I like went to the uh store"),
+            filter.filter("Um I uh went to the uh store"),
             "I went to the store"
         )
+    }
+
+    func testRemovesLikeWhenClearlyFiller() {
+        // "was like" is an unambiguous filler pattern
+        let result = filter.filter("Um it was like uh really big")
+        XCTAssertFalse(result.lowercased().contains("um"))
+        XCTAssertFalse(result.lowercased().contains("uh"))
+        XCTAssertFalse(result.lowercased().contains("like"))
     }
 
     func testRemovesHmm() {

@@ -55,8 +55,20 @@ struct GeneralSettingsView: View {
             }
 
             Section("Permissions") {
-                Button("Request Accessibility Access") {
-                    TextInserter.requestAccessibilityPermission()
+                HStack {
+                    if AXIsProcessTrusted() {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                        Text("Accessibility access granted")
+                    } else {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        Text("Accessibility access required")
+                        Spacer()
+                        Button("Grant Access") {
+                            TextInserter.requestAccessibilityPermission()
+                        }
+                    }
                 }
                 .help("Required for typing text into other apps")
             }
@@ -74,7 +86,10 @@ struct ModelSettingsView: View {
     var body: some View {
         Form {
             Section("Whisper Model") {
-                Picker("Model:", selection: $appState.selectedModel) {
+                Picker("Model:", selection: Binding(
+                    get: { appState.selectedModel },
+                    set: { appState.switchModel(to: $0) }
+                )) {
                     ForEach(WhisperModel.allCases) { model in
                         Text(model.displayName).tag(model)
                     }
@@ -84,27 +99,33 @@ struct ModelSettingsView: View {
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
-                        Text("Model loaded")
+                        Text("Model loaded (\(appState.selectedModel.displayName))")
+                            .font(.caption)
                     }
-                } else {
-                    Button("Download & Load Model") {
-                        appState.loadModel()
-                    }
-                    .disabled(appState.isModelDownloading)
-                }
-
-                if appState.isModelDownloading {
+                } else if appState.isModelDownloading {
                     ProgressView(value: appState.modelDownloadProgress)
                     Text("Downloading... \(Int(appState.modelDownloadProgress * 100))%")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                } else {
+                    Button("Download & Load Model") {
+                        appState.loadModel()
+                    }
                 }
             }
 
             Section("Info") {
-                Text("Models are downloaded from HuggingFace and cached locally. Larger models are more accurate but use more memory and are slower.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Models are downloaded from HuggingFace and cached locally.")
+                    Text("")
+                    Text("Speed guide on M4 Pro:")
+                    Text("  Tiny/Base: <0.5s (fast, less accurate)")
+                    Text("  Small: ~1s (good balance)")
+                    Text("  Medium: ~2-3s (accurate, recommended)")
+                    Text("  Large: ~4-5s (most accurate, slowest)")
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
             }
         }
         .formStyle(.grouped)

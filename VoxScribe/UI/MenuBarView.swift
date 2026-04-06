@@ -97,8 +97,9 @@ struct MenuBarView: View {
 
             // Bottom actions
             HStack {
-                Button("Settings...") {
-                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                Button("Open VoxScribe") {
+                    print("[VoxScribe] Settings button pressed")
+                    MainWindowController.shared.showWindow(appState: appState)
                 }
                 Spacer()
                 Button("Quit") {

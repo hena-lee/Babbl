@@ -53,3 +53,4 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.voxscribe.tests
         SWIFT_VERSION: "5"
         SWIFT_STRICT_CONCURRENCY: targeted
+        GENERATE_INFOPLIST_FILE: true

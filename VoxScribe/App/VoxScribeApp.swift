@@ -12,6 +12,7 @@ struct VoxScribeApp: App {
                 .onAppear {
                     if hotkeyManager == nil {
                         hotkeyManager = HotkeyManager(appState: appState)
+                        print("[VoxScribe] App started, hotkey manager initialized")
                     }
                 }
         } label: {
@@ -22,10 +23,5 @@ struct VoxScribeApp: App {
             }
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            SettingsView()
-                .environmentObject(appState)
-        }
     }
 }
