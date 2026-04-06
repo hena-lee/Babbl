@@ -1,0 +1,55 @@
+name: VoxScribe
+options:
+  bundleIdPrefix: com.voxscribe
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "26.2"
+  generateEmptyDirectories: true
+
+packages:
+  WhisperKit:
+    url: https://github.com/argmaxinc/WhisperKit.git
+    from: "0.9.0"
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts.git
+    from: "2.0.0"
+
+targets:
+  VoxScribe:
+    type: application
+    platform: macOS
+    sources:
+      - VoxScribe
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.voxscribe.app
+        PRODUCT_NAME: VoxScribe
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+        SWIFT_VERSION: "5"
+        SWIFT_STRICT_CONCURRENCY: targeted
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        INFOPLIST_FILE: VoxScribe/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: VoxScribe/Resources/VoxScribe.entitlements
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: true
+    dependencies:
+      - package: WhisperKit
+      - package: KeyboardShortcuts
+    entitlements:
+      path: VoxScribe/Resources/VoxScribe.entitlements
+      properties:
+        com.apple.security.device.audio-input: true
+
+  VoxScribeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - VoxScribeTests
+    dependencies:
+      - target: VoxScribe
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.voxscribe.tests
+        SWIFT_VERSION: "5"
+        SWIFT_STRICT_CONCURRENCY: targeted

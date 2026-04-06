@@ -1,0 +1,18 @@
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+build/
+
+# macOS
+.DS_Store
+*.swp
+*~
+
+# Models (downloaded at runtime)
+models/
+
+# IDE
+.idea/
+.vscode/
