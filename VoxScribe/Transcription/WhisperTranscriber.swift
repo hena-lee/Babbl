@@ -33,15 +33,45 @@ final class WhisperTranscriber {
     }
 
     func loadModel(_ model: WhisperModel) async throws {
-        let kit = try await WhisperKit(
-            model: model.rawValue,
-            downloadBase: Self.downloadBase,
-            verbose: false,
-            prewarm: true,
-            load: true,
-            download: true
-        )
+        let localModelDir = Self.localModelFolder(for: model)
+        let needsDownload = !Self.modelExistsLocally(model)
+        print("[VoxScribe:Transcriber] Loading model \(model.rawValue), download: \(needsDownload)")
+
+        let kit: WhisperKit
+        if needsDownload {
+            kit = try await WhisperKit(
+                model: model.rawValue,
+                downloadBase: Self.downloadBase,
+                verbose: false,
+                prewarm: true,
+                load: true,
+                download: true
+            )
+        } else {
+            kit = try await WhisperKit(
+                downloadBase: Self.downloadBase,
+                modelFolder: localModelDir.path,
+                verbose: false,
+                prewarm: true,
+                load: true,
+                download: false
+            )
+        }
         whisperKit = kit
+    }
+
+    private static func localModelFolder(for model: WhisperModel) -> URL {
+        downloadBase.appendingPathComponent(
+            "models/argmaxinc/whisperkit-coreml/\(model.rawValue)", isDirectory: true
+        )
+    }
+
+    private static func modelExistsLocally(_ model: WhisperModel) -> Bool {
+        let modelDir = localModelFolder(for: model)
+        let requiredFiles = ["AudioEncoder.mlmodelc", "TextDecoder.mlmodelc", "MelSpectrogram.mlmodelc"]
+        return requiredFiles.allSatisfy {
+            FileManager.default.fileExists(atPath: modelDir.appendingPathComponent($0).path)
+        }
     }
 
     func transcribe(audioSamples: [Float]) async throws -> String {

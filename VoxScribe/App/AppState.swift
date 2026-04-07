@@ -1,6 +1,14 @@
 import SwiftUI
 import Combine
 
+enum OverlayPhase: Equatable {
+    case hidden
+    case recording(startTime: Date)
+    case transcribing
+    case success
+    case failure
+}
+
 @MainActor
 final class AppState: ObservableObject {
     @Published var isRecording = false
@@ -12,6 +20,7 @@ final class AppState: ObservableObject {
     @Published var lastCleanedText = ""
     @Published var errorMessage: String?
     @Published var selectedModel: WhisperModel = .small
+    @Published var overlayPhase: OverlayPhase = .hidden
 
     // Stats (persisted via UserDefaults)
     @Published var totalWordsTranscribed: Int {
@@ -28,11 +37,15 @@ final class AppState: ObservableObject {
     let transcriber = WhisperTranscriber()
     let fillerFilter = FillerFilter()
     let textInserter = TextInserter()
+    let transcriptionStore = TranscriptionStore()
+    let overlayController = OverlayWindowController()
     var hotkeyManager: HotkeyManager?
 
     // Track the app that was active before we started recording
     private var previousApp: NSRunningApplication?
     private var recordingStartTime: Date?
+    private var overlaySubscription: AnyCancellable?
+    private var skipPasteForCurrentTranscription = false
 
     init() {
         totalWordsTranscribed = UserDefaults.standard.integer(forKey: "totalWordsTranscribed")
@@ -42,6 +55,26 @@ final class AppState: ObservableObject {
         // Restore output mode preference
         let savedOutputMode = UserDefaults.standard.string(forKey: "outputMode") ?? "typing"
         textInserter.mode = savedOutputMode == "clipboard" ? .clipboard : .typing
+
+        setupOverlayObserver()
+    }
+
+    private func setupOverlayObserver() {
+        overlaySubscription = $overlayPhase
+            .receive(on: RunLoop.main)
+            .sink { [weak self] phase in
+                guard let self else { return }
+                switch phase {
+                case .hidden:
+                    self.overlayController.dismiss()
+                default:
+                    let view = RecordingOverlayView(
+                        phase: phase,
+                        amplitudePublisher: self.audioCapture.amplitudeSubject
+                    )
+                    self.overlayController.show(rootView: view)
+                }
+            }
     }
 
     var formattedTimeSaved: String {
@@ -76,6 +109,12 @@ final class AppState: ObservableObject {
             return
         }
 
+        // If transcription is in progress, let it finish in background (skip paste)
+        if isTranscribing {
+            print("[VoxScribe] Re-triggered during transcription — background transcription will save to history, skip paste")
+            skipPasteForCurrentTranscription = true
+        }
+
         // Remember which app was active before recording
         previousApp = NSWorkspace.shared.frontmostApplication
         recordingStartTime = Date()
@@ -85,6 +124,7 @@ final class AppState: ObservableObject {
             try audioCapture.startRecording()
             isRecording = true
             errorMessage = nil
+            overlayPhase = .recording(startTime: recordingStartTime!)
             print("[VoxScribe] Recording started successfully")
         } catch {
             errorMessage = "Failed to start recording: \(error.localizedDescription)"
@@ -101,15 +141,21 @@ final class AppState: ObservableObject {
 
         guard let audio = audioBuffer, !audio.isEmpty else {
             errorMessage = "No audio recorded"
+            overlayPhase = .hidden
             print("[VoxScribe] ERROR: No audio data captured")
             return
         }
 
         isTranscribing = true
+        overlayPhase = .transcribing
+
+        // Capture whether this transcription should skip paste (re-trigger case)
+        let shouldSkipPaste = skipPasteForCurrentTranscription
+        skipPasteForCurrentTranscription = false
 
         // Restore focus to the previous app BEFORE transcription
         let targetApp = previousApp
-        if let app = targetApp {
+        if let app = targetApp, !shouldSkipPaste {
             print("[VoxScribe] Restoring focus to: \(app.localizedName ?? "unknown")")
             app.activate()
         }
@@ -135,19 +181,56 @@ final class AppState: ObservableObject {
                 totalFillersRemoved += max(fillerCount, 0)
                 totalSecondsTranscribed += recordingDuration
 
+                // Save to history BEFORE paste attempt (safety net)
+                let record = TranscriptionRecord(
+                    rawText: rawText,
+                    cleanedText: cleanedText,
+                    durationSeconds: recordingDuration
+                )
+                transcriptionStore.save(record)
+                print("[VoxScribe] Transcription saved to history")
+
+                if shouldSkipPaste {
+                    // Re-trigger case: new recording already started, just save silently
+                    print("[VoxScribe] Skipping paste (re-triggered during transcription)")
+                    isTranscribing = false
+                    // Don't change overlay phase — new recording is already controlling it
+                    return
+                }
+
                 // Small delay to ensure target app has focus before pasting
                 try await Task.sleep(nanoseconds: 200_000_000) // 200ms
 
                 print("[VoxScribe] Inserting text into active app...")
                 print("[VoxScribe] Accessibility trusted: \(AXIsProcessTrusted())")
-                textInserter.insertText(cleanedText)
-                print("[VoxScribe] Text insertion completed")
+                let didPaste = textInserter.insertText(cleanedText)
+                print("[VoxScribe] Text insertion completed (pasted: \(didPaste))")
 
                 isTranscribing = false
+                overlayPhase = didPaste ? .success : .failure
+
+                // Auto-dismiss overlay
+                let dismissDelay: UInt64 = didPaste ? 2_000_000_000 : 5_000_000_000
+                let phaseAtSet = overlayPhase
+                try await Task.sleep(nanoseconds: dismissDelay)
+                // Only dismiss if phase hasn't changed (e.g. new recording started)
+                if overlayPhase == phaseAtSet {
+                    overlayPhase = .hidden
+                }
             } catch {
                 errorMessage = "Transcription failed: \(error.localizedDescription)"
                 print("[VoxScribe] ERROR during transcription: \(error)")
                 isTranscribing = false
+
+                if !shouldSkipPaste {
+                    overlayPhase = .failure
+                    // Auto-dismiss after 5s
+                    let phaseAtSet = overlayPhase
+                    try? await Task.sleep(nanoseconds: 5_000_000_000)
+                    if overlayPhase == phaseAtSet {
+                        overlayPhase = .hidden
+                    }
+                }
             }
         }
     }

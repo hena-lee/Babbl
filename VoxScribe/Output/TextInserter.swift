@@ -10,21 +10,24 @@ final class TextInserter {
     var mode: OutputMode = .typing
     private var hasShownAccessibilityAlert = false
 
-    func insertText(_ text: String) {
+    /// Inserts text into the active app. Returns `true` if paste was simulated, `false` if clipboard-only.
+    @discardableResult
+    func insertText(_ text: String) -> Bool {
         print("[VoxScribe:TextInserter] insertText called, mode: \(mode), text length: \(text.count)")
 
         switch mode {
         case .typing:
-            typeText(text)
+            return typeText(text)
         case .clipboard:
             ClipboardManager.copy(text)
             print("[VoxScribe:TextInserter] Text copied to clipboard (clipboard-only mode)")
+            return false
         }
     }
 
     // MARK: - Typing Simulation
 
-    private func typeText(_ text: String) {
+    private func typeText(_ text: String) -> Bool {
         let isTrusted = AXIsProcessTrusted()
         print("[VoxScribe:TextInserter] AXIsProcessTrusted: \(isTrusted)")
 
@@ -35,7 +38,7 @@ final class TextInserter {
                 hasShownAccessibilityAlert = true
                 showAccessibilityAlert()
             }
-            return
+            return false
         }
 
         // Save what's currently on the clipboard
@@ -64,6 +67,8 @@ final class TextInserter {
                 print("[VoxScribe:TextInserter] Previous clipboard restored")
             }
         }
+
+        return true
     }
 
     private func simulatePaste() {

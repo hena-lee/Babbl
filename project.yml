@@ -51,6 +51,9 @@ targets:
       - VoxScribeTests
     dependencies:
       - target: VoxScribe
+    configFiles:
+      Debug: Local.xcconfig
+      Release: Local.xcconfig
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.voxscribe.tests

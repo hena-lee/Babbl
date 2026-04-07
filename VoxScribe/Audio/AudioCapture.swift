@@ -1,10 +1,14 @@
 import AVFoundation
+import Combine
 
 final class AudioCapture {
     private var audioEngine: AVAudioEngine?
     private var recordedSamples: [Float] = []
     private let sampleRate: Double = 16000
     private let lock = NSLock()
+
+    /// Real-time audio amplitude for UI visualization (published on main thread)
+    let amplitudeSubject = CurrentValueSubject<Float, Never>(0.0)
 
     func startRecording() throws {
         let engine = AVAudioEngine()
@@ -52,6 +56,10 @@ final class AudioCapture {
         audioEngine?.inputNode.removeTap(onBus: 0)
         audioEngine?.stop()
         audioEngine = nil
+
+        DispatchQueue.main.async { [weak self] in
+            self?.amplitudeSubject.send(0.0)
+        }
 
         lock.lock()
         let samples = recordedSamples
@@ -108,6 +116,15 @@ final class AudioCapture {
         lock.lock()
         recordedSamples.append(contentsOf: UnsafeBufferPointer(start: channelData, count: frameLength))
         lock.unlock()
+
+        // Compute RMS amplitude for overlay visualization
+        let samples = UnsafeBufferPointer(start: channelData, count: frameLength)
+        var sum: Float = 0
+        for sample in samples { sum += sample * sample }
+        let rms = sqrt(sum / Float(max(frameLength, 1)))
+        DispatchQueue.main.async { [weak self] in
+            self?.amplitudeSubject.send(rms)
+        }
     }
 }
 
