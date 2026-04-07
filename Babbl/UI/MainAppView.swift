@@ -56,7 +56,7 @@ struct DashboardTab: View {
                     .font(.system(size: 40))
                     .foregroundColor(.accentColor)
                 VStack(alignment: .leading) {
-                    Text("VoxScribe")
+                    Text("Babbl")
                         .font(.title)
                         .fontWeight(.bold)
                     Text("Intelligent Voice-to-Text")
@@ -108,7 +108,7 @@ struct DashboardTab: View {
                         color: appState.isRecording ? .red : .blue
                     ) {
                         if !appState.isModelLoaded {
-                            print("[VoxScribe] Record pressed but model not loaded, switching to Model tab")
+                            print("[Babbl] Record pressed but model not loaded, switching to Model tab")
                             appState.errorMessage = "Please download a model first"
                             selectedTab = 2 // Switch to Model tab
                         } else {
@@ -123,7 +123,7 @@ struct DashboardTab: View {
                         description: hotkeyDescription,
                         color: .orange
                     ) {
-                        print("[VoxScribe] Hotkey card pressed, switching to General tab")
+                        print("[Babbl] Hotkey card pressed, switching to General tab")
                         selectedTab = 1 // Switch to General tab
                     }
 
@@ -135,9 +135,9 @@ struct DashboardTab: View {
                         color: accessibilityGranted ? .green : .red
                     ) {
                         if accessibilityGranted {
-                            print("[VoxScribe] Accessibility already granted, no action needed")
+                            print("[Babbl] Accessibility already granted, no action needed")
                         } else {
-                            print("[VoxScribe] Requesting accessibility permission...")
+                            print("[Babbl] Requesting accessibility permission...")
                             TextInserter.requestAccessibilityPermission()
                             // Re-check after a delay (user may grant in System Settings)
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -208,7 +208,7 @@ struct DashboardTab: View {
         .padding()
         .onAppear {
             accessibilityGranted = AXIsProcessTrusted()
-            print("[VoxScribe] Dashboard appeared. Accessibility: \(accessibilityGranted), Model loaded: \(appState.isModelLoaded)")
+            print("[Babbl] Dashboard appeared. Accessibility: \(accessibilityGranted), Model loaded: \(appState.isModelLoaded)")
         }
         .onReceive(accessibilityTimer) { _ in
             accessibilityGranted = AXIsProcessTrusted()

@@ -7,10 +7,10 @@ final class MainWindowController {
     private var window: NSWindow?
 
     func showWindow(appState: AppState) {
-        print("[VoxScribe] Opening main window...")
+        print("[Babbl] Opening main window...")
 
         if let existing = window, existing.isVisible {
-            print("[VoxScribe] Window already visible, bringing to front")
+            print("[Babbl] Window already visible, bringing to front")
             existing.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
@@ -25,7 +25,7 @@ final class MainWindowController {
             backing: .buffered,
             defer: false
         )
-        newWindow.title = "VoxScribe"
+        newWindow.title = "Babbl"
         newWindow.contentView = NSHostingView(rootView: contentView)
         newWindow.center()
         newWindow.isReleasedWhenClosed = false
@@ -43,7 +43,7 @@ final class MainWindowController {
         NSApp.activate(ignoringOtherApps: true)
 
         window = newWindow
-        print("[VoxScribe] Main window opened successfully, activation policy set to .regular")
+        print("[Babbl] Main window opened successfully, activation policy set to .regular")
 
         // When the window closes, revert to accessory (menu bar only) mode
         NotificationCenter.default.addObserver(
@@ -51,7 +51,7 @@ final class MainWindowController {
             object: newWindow,
             queue: .main
         ) { [weak self] _ in
-            print("[VoxScribe] Main window closing, reverting to accessory activation policy")
+            print("[Babbl] Main window closing, reverting to accessory activation policy")
             NSApp.setActivationPolicy(.accessory)
             self?.window = nil
         }

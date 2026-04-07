@@ -1,5 +1,5 @@
 import XCTest
-@testable import VoxScribe
+@testable import Babbl
 
 final class TextInserterTests: XCTestCase {
 
@@ -38,7 +38,7 @@ final class TextInserterTests: XCTestCase {
     // MARK: - Clipboard
 
     func testClipboardManagerCopy() {
-        let testString = "VoxScribe test clipboard content \(UUID())"
+        let testString = "Babbl test clipboard content \(UUID())"
         ClipboardManager.copy(testString)
         let result = ClipboardManager.read()
         XCTAssertEqual(result, testString)

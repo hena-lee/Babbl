@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>VoxScribe</string>
+    <string>Babbl</string>
     <key>CFBundleDisplayName</key>
-    <string>VoxScribe</string>
+    <string>Babbl</string>
     <key>CFBundleIdentifier</key>
     <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
     <key>CFBundleVersion</key>
@@ -21,6 +21,6 @@
     <key>LSUIElement</key>
     <true/>
     <key>NSMicrophoneUsageDescription</key>
-    <string>VoxScribe needs microphone access to transcribe your speech to text.</string>
+    <string>Babbl needs microphone access to transcribe your speech to text.</string>
 </dict>
 </plist>

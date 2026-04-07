@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct VoxScribeApp: App {
+struct BabblApp: App {
     @StateObject private var appState = AppState()
     @State private var hasInitialized = false
 
@@ -14,7 +14,7 @@ struct VoxScribeApp: App {
                     hasInitialized = true
 
                     appState.hotkeyManager = HotkeyManager(appState: appState)
-                    print("[VoxScribe] App started, hotkey manager initialized (mode: \(appState.hotkeyManager?.mode.displayName ?? "unknown"))")
+                    print("[Babbl] App started, hotkey manager initialized (mode: \(appState.hotkeyManager?.mode.displayName ?? "unknown"))")
 
                     // Auto-request accessibility once on launch
                     if !AXIsProcessTrusted() {
@@ -23,7 +23,7 @@ struct VoxScribeApp: App {
                 }
         } label: {
             Label {
-                Text("VoxScribe")
+                Text("Babbl")
             } icon: {
                 Image(systemName: appState.isRecording ? "waveform.circle.fill" : "waveform.circle")
             }

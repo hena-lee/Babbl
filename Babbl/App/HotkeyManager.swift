@@ -60,11 +60,11 @@ final class HotkeyManager {
             setupModifierMonitor()
             // Disable the KeyboardShortcuts listener when using modifier mode
             KeyboardShortcuts.onKeyUp(for: .toggleRecording) { }
-            print("[VoxScribe:Hotkey] Set up \(mode.displayName) monitor")
+            print("[Babbl:Hotkey] Set up \(mode.displayName) monitor")
 
         case .customShortcut:
             setupCustomShortcut()
-            print("[VoxScribe:Hotkey] Set up custom shortcut monitor")
+            print("[Babbl:Hotkey] Set up custom shortcut monitor")
         }
     }
 
@@ -125,14 +125,14 @@ final class HotkeyManager {
             switch mode {
             case .optionPress:
                 // Single press & release triggers toggle
-                print("[VoxScribe:Hotkey] Option pressed & released, toggling recording")
+                print("[Babbl:Hotkey] Option pressed & released, toggling recording")
                 appState.toggleRecording()
 
             case .optionDoubleTap:
                 if let lastPress = lastOptionPressTime,
                    now.timeIntervalSince(lastPress) < doubleTapInterval {
                     // Second tap within interval - trigger!
-                    print("[VoxScribe:Hotkey] Option double-tapped, toggling recording")
+                    print("[Babbl:Hotkey] Option double-tapped, toggling recording")
                     lastOptionPressTime = nil
                     appState.toggleRecording()
                 } else {

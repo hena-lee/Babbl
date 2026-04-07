@@ -1,5 +1,5 @@
 import XCTest
-@testable import VoxScribe
+@testable import Babbl
 
 @MainActor
 final class AppStateTests: XCTestCase {

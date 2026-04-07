@@ -27,7 +27,7 @@ final class WhisperTranscriber {
 
     private static var downloadBase: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let folder = appSupport.appendingPathComponent("VoxScribe/Models", isDirectory: true)
+        let folder = appSupport.appendingPathComponent("Babbl/Models", isDirectory: true)
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return folder
     }
@@ -35,7 +35,7 @@ final class WhisperTranscriber {
     func loadModel(_ model: WhisperModel) async throws {
         let localModelDir = Self.localModelFolder(for: model)
         let needsDownload = !Self.modelExistsLocally(model)
-        print("[VoxScribe:Transcriber] Loading model \(model.rawValue), download: \(needsDownload)")
+        print("[Babbl:Transcriber] Loading model \(model.rawValue), download: \(needsDownload)")
 
         let kit: WhisperKit
         if needsDownload {

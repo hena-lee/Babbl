@@ -1,5 +1,5 @@
 import XCTest
-@testable import VoxScribe
+@testable import Babbl
 
 final class TranscriptionStoreTests: XCTestCase {
     private var tempURL: URL!
@@ -7,7 +7,7 @@ final class TranscriptionStoreTests: XCTestCase {
     override func setUp() {
         super.setUp()
         tempURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("VoxScribeTest_\(UUID().uuidString).json")
+            .appendingPathComponent("BabblTest_\(UUID().uuidString).json")
     }
 
     override func tearDown() {

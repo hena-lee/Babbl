@@ -15,7 +15,7 @@ final class AudioCapture {
         let inputNode = engine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
 
-        print("[VoxScribe:Audio] Input format: \(inputFormat.sampleRate)Hz, \(inputFormat.channelCount)ch, \(inputFormat.commonFormat.rawValue)")
+        print("[Babbl:Audio] Input format: \(inputFormat.sampleRate)Hz, \(inputFormat.channelCount)ch, \(inputFormat.commonFormat.rawValue)")
 
         let targetFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
@@ -40,7 +40,7 @@ final class AudioCapture {
                 if let data = buffer.floatChannelData?[0] {
                     let samples = Array(UnsafeBufferPointer(start: data, count: min(Int(buffer.frameLength), 10)))
                     let maxVal = samples.map { abs($0) }.max() ?? 0
-                    print("[VoxScribe:Audio] Buffer #\(bufferCount): \(buffer.frameLength) frames, max amplitude: \(maxVal)")
+                    print("[Babbl:Audio] Buffer #\(bufferCount): \(buffer.frameLength) frames, max amplitude: \(maxVal)")
                 }
             }
             self?.processAudioBuffer(buffer, converter: converter, targetFormat: targetFormat)
@@ -49,7 +49,7 @@ final class AudioCapture {
         engine.prepare()
         try engine.start()
         audioEngine = engine
-        print("[VoxScribe:Audio] Engine started")
+        print("[Babbl:Audio] Engine started")
     }
 
     func stopRecording() -> [Float]? {
@@ -69,9 +69,9 @@ final class AudioCapture {
         if !samples.isEmpty {
             let maxAmplitude = samples.map { abs($0) }.max() ?? 0
             let rms = sqrt(samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count))
-            print("[VoxScribe:Audio] Captured \(samples.count) samples (\(String(format: "%.1f", Double(samples.count) / sampleRate))s), max amplitude: \(maxAmplitude), RMS: \(rms)")
+            print("[Babbl:Audio] Captured \(samples.count) samples (\(String(format: "%.1f", Double(samples.count) / sampleRate))s), max amplitude: \(maxAmplitude), RMS: \(rms)")
         } else {
-            print("[VoxScribe:Audio] No samples captured!")
+            print("[Babbl:Audio] No samples captured!")
         }
 
         return samples.isEmpty ? nil : samples
@@ -106,7 +106,7 @@ final class AudioCapture {
         }
 
         if let error = error {
-            print("[VoxScribe:Audio] Conversion error: \(error)")
+            print("[Babbl:Audio] Conversion error: \(error)")
             return
         }
 

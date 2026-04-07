@@ -76,6 +76,20 @@ struct GeneralSettingsView: View {
                     isAccessibilityGranted = AXIsProcessTrusted()
                 }
             }
+
+            Section {
+                HStack {
+                    Text("If Babbl is useful to you, consider supporting its development.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Link(destination: URL(string: "https://ko-fi.com/babbl")!) {
+                        Text("Support Babbl")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
+                }
+            }
         }
         .formStyle(.grouped)
         .padding()

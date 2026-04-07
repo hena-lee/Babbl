@@ -13,14 +13,14 @@ final class TextInserter {
     /// Inserts text into the active app. Returns `true` if paste was simulated, `false` if clipboard-only.
     @discardableResult
     func insertText(_ text: String) -> Bool {
-        print("[VoxScribe:TextInserter] insertText called, mode: \(mode), text length: \(text.count)")
+        print("[Babbl:TextInserter] insertText called, mode: \(mode), text length: \(text.count)")
 
         switch mode {
         case .typing:
             return typeText(text)
         case .clipboard:
             ClipboardManager.copy(text)
-            print("[VoxScribe:TextInserter] Text copied to clipboard (clipboard-only mode)")
+            print("[Babbl:TextInserter] Text copied to clipboard (clipboard-only mode)")
             return false
         }
     }
@@ -29,10 +29,10 @@ final class TextInserter {
 
     private func typeText(_ text: String) -> Bool {
         let isTrusted = AXIsProcessTrusted()
-        print("[VoxScribe:TextInserter] AXIsProcessTrusted: \(isTrusted)")
+        print("[Babbl:TextInserter] AXIsProcessTrusted: \(isTrusted)")
 
         guard isTrusted else {
-            print("[VoxScribe:TextInserter] No accessibility permission, falling back to clipboard")
+            print("[Babbl:TextInserter] No accessibility permission, falling back to clipboard")
             ClipboardManager.copy(text)
             if !hasShownAccessibilityAlert {
                 hasShownAccessibilityAlert = true
@@ -43,28 +43,28 @@ final class TextInserter {
 
         // Save what's currently on the clipboard
         let previousClipboard = ClipboardManager.read()
-        print("[VoxScribe:TextInserter] Saved previous clipboard (\(previousClipboard?.count ?? 0) chars)")
+        print("[Babbl:TextInserter] Saved previous clipboard (\(previousClipboard?.count ?? 0) chars)")
 
         // Set clipboard to our text
         ClipboardManager.copy(text)
-        print("[VoxScribe:TextInserter] Set clipboard to transcribed text")
+        print("[Babbl:TextInserter] Set clipboard to transcribed text")
 
         // Small delay to ensure clipboard is set
         usleep(50_000) // 50ms
 
         // Check which app is frontmost right now
         let frontApp = NSWorkspace.shared.frontmostApplication
-        print("[VoxScribe:TextInserter] Current frontmost app: \(frontApp?.localizedName ?? "none") (pid: \(frontApp?.processIdentifier ?? 0))")
+        print("[Babbl:TextInserter] Current frontmost app: \(frontApp?.localizedName ?? "none") (pid: \(frontApp?.processIdentifier ?? 0))")
 
         // Simulate Cmd+V to paste
         simulatePaste()
-        print("[VoxScribe:TextInserter] Cmd+V paste simulated")
+        print("[Babbl:TextInserter] Cmd+V paste simulated")
 
         // Restore previous clipboard content after a delay
         if let previous = previousClipboard {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 ClipboardManager.copy(previous)
-                print("[VoxScribe:TextInserter] Previous clipboard restored")
+                print("[Babbl:TextInserter] Previous clipboard restored")
             }
         }
 
@@ -94,7 +94,7 @@ final class TextInserter {
         DispatchQueue.main.async {
             let alert = NSAlert()
             alert.messageText = "Accessibility Permission Required"
-            alert.informativeText = "VoxScribe needs accessibility access to type text into other apps. Text has been copied to your clipboard instead.\n\nGo to System Settings > Privacy & Security > Accessibility, find VoxScribe in the list, and toggle it ON."
+            alert.informativeText = "Babbl needs accessibility access to type text into other apps. Text has been copied to your clipboard instead.\n\nGo to System Settings > Privacy & Security > Accessibility, find Babbl in the list, and toggle it ON."
             alert.alertStyle = .warning
             alert.addButton(withTitle: "Open System Settings")
             alert.addButton(withTitle: "OK")
@@ -109,17 +109,17 @@ final class TextInserter {
         }
     }
 
-    /// Triggers the system accessibility prompt which auto-adds VoxScribe to the list.
+    /// Triggers the system accessibility prompt which auto-adds Babbl to the list.
     /// The user still needs to toggle the switch ON in System Settings.
     static func requestAccessibilityPermission() {
         if AXIsProcessTrusted() {
-            print("[VoxScribe:TextInserter] Accessibility already granted, no prompt needed")
+            print("[Babbl:TextInserter] Accessibility already granted, no prompt needed")
             return
         }
 
-        print("[VoxScribe:TextInserter] Requesting accessibility — triggering system prompt to auto-add app to list...")
+        print("[Babbl:TextInserter] Requesting accessibility — triggering system prompt to auto-add app to list...")
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
-        print("[VoxScribe:TextInserter] System prompt triggered, current status: \(trusted)")
+        print("[Babbl:TextInserter] System prompt triggered, current status: \(trusted)")
     }
 }

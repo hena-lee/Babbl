@@ -1,6 +1,6 @@
-name: VoxScribe
+name: Babbl
 options:
-  bundleIdPrefix: com.voxscribe
+  bundleIdPrefix: com.babbl
   deploymentTarget:
     macOS: "14.0"
   xcodeVersion: "26.2"
@@ -15,22 +15,22 @@ packages:
     from: "2.0.0"
 
 targets:
-  VoxScribe:
+  Babbl:
     type: application
     platform: macOS
     sources:
-      - VoxScribe
+      - Babbl
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.voxscribe.app
-        PRODUCT_NAME: VoxScribe
+        PRODUCT_BUNDLE_IDENTIFIER: com.babbl.app
+        PRODUCT_NAME: Babbl
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: 1
         SWIFT_VERSION: "5"
         SWIFT_STRICT_CONCURRENCY: targeted
         MACOSX_DEPLOYMENT_TARGET: "14.0"
-        INFOPLIST_FILE: VoxScribe/Resources/Info.plist
-        CODE_SIGN_ENTITLEMENTS: VoxScribe/Resources/VoxScribe.entitlements
+        INFOPLIST_FILE: Babbl/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Babbl/Resources/Babbl.entitlements
         CODE_SIGN_STYLE: Automatic
         ENABLE_HARDENED_RUNTIME: true
     configFiles:
@@ -40,23 +40,23 @@ targets:
       - package: WhisperKit
       - package: KeyboardShortcuts
     entitlements:
-      path: VoxScribe/Resources/VoxScribe.entitlements
+      path: Babbl/Resources/Babbl.entitlements
       properties:
         com.apple.security.device.audio-input: true
 
-  VoxScribeTests:
+  BabblTests:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - VoxScribeTests
+      - BabblTests
     dependencies:
-      - target: VoxScribe
+      - target: Babbl
     configFiles:
       Debug: Local.xcconfig
       Release: Local.xcconfig
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.voxscribe.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.babbl.tests
         SWIFT_VERSION: "5"
         SWIFT_STRICT_CONCURRENCY: targeted
         GENERATE_INFOPLIST_FILE: true

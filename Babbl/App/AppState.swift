@@ -105,30 +105,30 @@ final class AppState: ObservableObject {
     private func startRecording() {
         guard isModelLoaded else {
             errorMessage = "Model not loaded. Please wait for download to complete."
-            print("[VoxScribe] ERROR: Tried to record but model not loaded")
+            print("[Babbl] ERROR: Tried to record but model not loaded")
             return
         }
 
         // If transcription is in progress, let it finish in background (skip paste)
         if isTranscribing {
-            print("[VoxScribe] Re-triggered during transcription — background transcription will save to history, skip paste")
+            print("[Babbl] Re-triggered during transcription — background transcription will save to history, skip paste")
             skipPasteForCurrentTranscription = true
         }
 
         // Remember which app was active before recording
         previousApp = NSWorkspace.shared.frontmostApplication
         recordingStartTime = Date()
-        print("[VoxScribe] Starting recording... Previous app: \(previousApp?.localizedName ?? "unknown")")
+        print("[Babbl] Starting recording... Previous app: \(previousApp?.localizedName ?? "unknown")")
 
         do {
             try audioCapture.startRecording()
             isRecording = true
             errorMessage = nil
             overlayPhase = .recording(startTime: recordingStartTime!)
-            print("[VoxScribe] Recording started successfully")
+            print("[Babbl] Recording started successfully")
         } catch {
             errorMessage = "Failed to start recording: \(error.localizedDescription)"
-            print("[VoxScribe] ERROR starting recording: \(error)")
+            print("[Babbl] ERROR starting recording: \(error)")
         }
     }
 
@@ -137,12 +137,12 @@ final class AppState: ObservableObject {
         let audioBuffer = audioCapture.stopRecording()
         let recordingDuration = recordingStartTime.map { Date().timeIntervalSince($0) } ?? 0
 
-        print("[VoxScribe] Recording stopped. Duration: \(String(format: "%.1f", recordingDuration))s, samples: \(audioBuffer?.count ?? 0)")
+        print("[Babbl] Recording stopped. Duration: \(String(format: "%.1f", recordingDuration))s, samples: \(audioBuffer?.count ?? 0)")
 
         guard let audio = audioBuffer, !audio.isEmpty else {
             errorMessage = "No audio recorded"
             overlayPhase = .hidden
-            print("[VoxScribe] ERROR: No audio data captured")
+            print("[Babbl] ERROR: No audio data captured")
             return
         }
 
@@ -156,23 +156,23 @@ final class AppState: ObservableObject {
         // Restore focus to the previous app BEFORE transcription
         let targetApp = previousApp
         if let app = targetApp, !shouldSkipPaste {
-            print("[VoxScribe] Restoring focus to: \(app.localizedName ?? "unknown")")
+            print("[Babbl] Restoring focus to: \(app.localizedName ?? "unknown")")
             app.activate()
         }
 
         Task {
             do {
-                print("[VoxScribe] Starting transcription...")
+                print("[Babbl] Starting transcription...")
                 let startTime = Date()
                 let rawText = try await transcriber.transcribe(audioSamples: audio)
                 let transcribeTime = Date().timeIntervalSince(startTime)
-                print("[VoxScribe] Transcription completed in \(String(format: "%.1f", transcribeTime))s: \"\(rawText)\"")
+                print("[Babbl] Transcription completed in \(String(format: "%.1f", transcribeTime))s: \"\(rawText)\"")
 
                 lastTranscription = rawText
 
                 let cleanedText = fillerFilter.filter(rawText)
                 lastCleanedText = cleanedText
-                print("[VoxScribe] After filler removal: \"\(cleanedText)\"")
+                print("[Babbl] After filler removal: \"\(cleanedText)\"")
 
                 // Update stats
                 let wordCount = cleanedText.split(separator: " ").count
@@ -188,11 +188,11 @@ final class AppState: ObservableObject {
                     durationSeconds: recordingDuration
                 )
                 transcriptionStore.save(record)
-                print("[VoxScribe] Transcription saved to history")
+                print("[Babbl] Transcription saved to history")
 
                 if shouldSkipPaste {
                     // Re-trigger case: new recording already started, just save silently
-                    print("[VoxScribe] Skipping paste (re-triggered during transcription)")
+                    print("[Babbl] Skipping paste (re-triggered during transcription)")
                     isTranscribing = false
                     // Don't change overlay phase — new recording is already controlling it
                     return
@@ -201,10 +201,10 @@ final class AppState: ObservableObject {
                 // Small delay to ensure target app has focus before pasting
                 try await Task.sleep(nanoseconds: 200_000_000) // 200ms
 
-                print("[VoxScribe] Inserting text into active app...")
-                print("[VoxScribe] Accessibility trusted: \(AXIsProcessTrusted())")
+                print("[Babbl] Inserting text into active app...")
+                print("[Babbl] Accessibility trusted: \(AXIsProcessTrusted())")
                 let didPaste = textInserter.insertText(cleanedText)
-                print("[VoxScribe] Text insertion completed (pasted: \(didPaste))")
+                print("[Babbl] Text insertion completed (pasted: \(didPaste))")
 
                 isTranscribing = false
                 overlayPhase = didPaste ? .success : .failure
@@ -219,7 +219,7 @@ final class AppState: ObservableObject {
                 }
             } catch {
                 errorMessage = "Transcription failed: \(error.localizedDescription)"
-                print("[VoxScribe] ERROR during transcription: \(error)")
+                print("[Babbl] ERROR during transcription: \(error)")
                 isTranscribing = false
 
                 if !shouldSkipPaste {
@@ -238,18 +238,18 @@ final class AppState: ObservableObject {
     func loadModel() {
         guard !isModelLoaded && !isModelDownloading else { return }
         isModelDownloading = true
-        print("[VoxScribe] Loading model: \(selectedModel.rawValue)...")
+        print("[Babbl] Loading model: \(selectedModel.rawValue)...")
 
         Task {
             do {
                 try await transcriber.loadModel(selectedModel)
                 isModelLoaded = true
                 isModelDownloading = false
-                print("[VoxScribe] Model loaded successfully: \(selectedModel.rawValue)")
+                print("[Babbl] Model loaded successfully: \(selectedModel.rawValue)")
             } catch {
                 errorMessage = "Failed to load model: \(error.localizedDescription)"
                 isModelDownloading = false
-                print("[VoxScribe] ERROR loading model: \(error)")
+                print("[Babbl] ERROR loading model: \(error)")
             }
         }
     }
@@ -260,18 +260,18 @@ final class AppState: ObservableObject {
         isModelLoaded = false
         isModelDownloading = true
         errorMessage = nil
-        print("[VoxScribe] Switching model to: \(model.rawValue)...")
+        print("[Babbl] Switching model to: \(model.rawValue)...")
 
         Task {
             do {
                 try await transcriber.loadModel(model)
                 isModelLoaded = true
                 isModelDownloading = false
-                print("[VoxScribe] Model switched successfully to: \(model.rawValue)")
+                print("[Babbl] Model switched successfully to: \(model.rawValue)")
             } catch {
                 errorMessage = "Failed to load model: \(error.localizedDescription)"
                 isModelDownloading = false
-                print("[VoxScribe] ERROR switching model: \(error)")
+                print("[Babbl] ERROR switching model: \(error)")
             }
         }
     }

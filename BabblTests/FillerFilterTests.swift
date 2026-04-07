@@ -1,5 +1,5 @@
 import XCTest
-@testable import VoxScribe
+@testable import Babbl
 
 final class FillerFilterTests: XCTestCase {
     let filter = FillerFilter()

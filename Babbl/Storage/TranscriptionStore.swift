@@ -6,7 +6,7 @@ final class TranscriptionStore {
 
     init() {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let dir = appSupport.appendingPathComponent("VoxScribe", isDirectory: true)
+        let dir = appSupport.appendingPathComponent("Babbl", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         self.fileURL = dir.appendingPathComponent("transcription_history.json")
         self.records = Self.load(from: fileURL)

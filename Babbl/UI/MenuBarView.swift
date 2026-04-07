@@ -97,8 +97,8 @@ struct MenuBarView: View {
 
             // Bottom actions
             HStack {
-                Button("Open VoxScribe") {
-                    print("[VoxScribe] Settings button pressed")
+                Button("Open Babbl") {
+                    print("[Babbl] Settings button pressed")
                     MainWindowController.shared.showWindow(appState: appState)
                 }
                 Spacer()
