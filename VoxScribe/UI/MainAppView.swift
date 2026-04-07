@@ -45,6 +45,8 @@ struct DashboardTab: View {
     @EnvironmentObject var appState: AppState
     @Binding var selectedTab: Int
     @State private var accessibilityGranted = AXIsProcessTrusted()
+    @AppStorage("hotkeyMode") private var hotkeyMode = HotkeyMode.optionDoubleTap.rawValue
+    let accessibilityTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 20) {
@@ -118,7 +120,7 @@ struct DashboardTab: View {
                     ActionCard(
                         icon: "keyboard",
                         title: "Hotkey",
-                        description: KeyboardShortcuts.getShortcut(for: .toggleRecording)?.description ?? "Not set",
+                        description: hotkeyDescription,
                         color: .orange
                     ) {
                         print("[VoxScribe] Hotkey card pressed, switching to General tab")
@@ -205,9 +207,21 @@ struct DashboardTab: View {
         }
         .padding()
         .onAppear {
-            // Refresh accessibility status each time dashboard appears
             accessibilityGranted = AXIsProcessTrusted()
             print("[VoxScribe] Dashboard appeared. Accessibility: \(accessibilityGranted), Model loaded: \(appState.isModelLoaded)")
+        }
+        .onReceive(accessibilityTimer) { _ in
+            accessibilityGranted = AXIsProcessTrusted()
+        }
+    }
+
+    private var hotkeyDescription: String {
+        guard let mode = HotkeyMode(rawValue: hotkeyMode) else { return "Not set" }
+        switch mode {
+        case .optionDoubleTap: return "Double-tap Option"
+        case .optionPress: return "Tap Option"
+        case .customShortcut:
+            return KeyboardShortcuts.getShortcut(for: .toggleRecording)?.description ?? "Not set"
         }
     }
 

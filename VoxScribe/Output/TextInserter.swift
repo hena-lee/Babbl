@@ -8,6 +8,7 @@ final class TextInserter {
     }
 
     var mode: OutputMode = .typing
+    private var hasShownAccessibilityAlert = false
 
     func insertText(_ text: String) {
         print("[VoxScribe:TextInserter] insertText called, mode: \(mode), text length: \(text.count)")
@@ -16,7 +17,7 @@ final class TextInserter {
         case .typing:
             typeText(text)
         case .clipboard:
-            copyToClipboard(text)
+            ClipboardManager.copy(text)
             print("[VoxScribe:TextInserter] Text copied to clipboard (clipboard-only mode)")
         }
     }
@@ -29,18 +30,20 @@ final class TextInserter {
 
         guard isTrusted else {
             print("[VoxScribe:TextInserter] No accessibility permission, falling back to clipboard")
-            copyToClipboard(text)
-            showAccessibilityAlert()
+            ClipboardManager.copy(text)
+            if !hasShownAccessibilityAlert {
+                hasShownAccessibilityAlert = true
+                showAccessibilityAlert()
+            }
             return
         }
 
         // Save what's currently on the clipboard
-        let previousClipboard = NSPasteboard.general.string(forType: .string)
+        let previousClipboard = ClipboardManager.read()
         print("[VoxScribe:TextInserter] Saved previous clipboard (\(previousClipboard?.count ?? 0) chars)")
 
         // Set clipboard to our text
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
+        ClipboardManager.copy(text)
         print("[VoxScribe:TextInserter] Set clipboard to transcribed text")
 
         // Small delay to ensure clipboard is set
@@ -57,8 +60,7 @@ final class TextInserter {
         // Restore previous clipboard content after a delay
         if let previous = previousClipboard {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(previous, forType: .string)
+                ClipboardManager.copy(previous)
                 print("[VoxScribe:TextInserter] Previous clipboard restored")
             }
         }
@@ -81,20 +83,13 @@ final class TextInserter {
         keyUp?.post(tap: .cghidEventTap)
     }
 
-    // MARK: - Clipboard
-
-    private func copyToClipboard(_ text: String) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
-    }
-
     // MARK: - Accessibility
 
     private func showAccessibilityAlert() {
         DispatchQueue.main.async {
             let alert = NSAlert()
             alert.messageText = "Accessibility Permission Required"
-            alert.informativeText = "VoxScribe needs accessibility access to type text into other apps. Text has been copied to your clipboard instead.\n\nGo to System Settings > Privacy & Security > Accessibility and add VoxScribe (or Xcode during development)."
+            alert.informativeText = "VoxScribe needs accessibility access to type text into other apps. Text has been copied to your clipboard instead.\n\nGo to System Settings > Privacy & Security > Accessibility, find VoxScribe in the list, and toggle it ON."
             alert.alertStyle = .warning
             alert.addButton(withTitle: "Open System Settings")
             alert.addButton(withTitle: "OK")
@@ -109,16 +104,17 @@ final class TextInserter {
         }
     }
 
+    /// Triggers the system accessibility prompt which auto-adds VoxScribe to the list.
+    /// The user still needs to toggle the switch ON in System Settings.
     static func requestAccessibilityPermission() {
-        // First check if already granted -- don't prompt unnecessarily
         if AXIsProcessTrusted() {
             print("[VoxScribe:TextInserter] Accessibility already granted, no prompt needed")
             return
         }
 
-        print("[VoxScribe:TextInserter] Accessibility not granted, showing system prompt...")
+        print("[VoxScribe:TextInserter] Requesting accessibility — triggering system prompt to auto-add app to list...")
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
-        print("[VoxScribe:TextInserter] Permission prompt shown, current status: \(trusted)")
+        print("[VoxScribe:TextInserter] System prompt triggered, current status: \(trusted)")
     }
 }

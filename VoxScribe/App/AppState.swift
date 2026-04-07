@@ -28,6 +28,7 @@ final class AppState: ObservableObject {
     let transcriber = WhisperTranscriber()
     let fillerFilter = FillerFilter()
     let textInserter = TextInserter()
+    var hotkeyManager: HotkeyManager?
 
     // Track the app that was active before we started recording
     private var previousApp: NSRunningApplication?
@@ -37,6 +38,10 @@ final class AppState: ObservableObject {
         totalWordsTranscribed = UserDefaults.standard.integer(forKey: "totalWordsTranscribed")
         totalFillersRemoved = UserDefaults.standard.integer(forKey: "totalFillersRemoved")
         totalSecondsTranscribed = UserDefaults.standard.double(forKey: "totalSecondsTranscribed")
+
+        // Restore output mode preference
+        let savedOutputMode = UserDefaults.standard.string(forKey: "outputMode") ?? "typing"
+        textInserter.mode = savedOutputMode == "clipboard" ? .clipboard : .typing
     }
 
     var formattedTimeSaved: String {

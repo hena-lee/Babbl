@@ -42,6 +42,7 @@
 		137587B70B5855439082B233 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		1D31BF013C197339824B2FB7 /* WhisperTranscriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperTranscriber.swift; sourceTree = "<group>"; };
 		27D96F5FA79E600F21BA031D /* MainWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowController.swift; sourceTree = "<group>"; };
+		2BFE46030D501627D310BE0B /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 		3003F0EF244EE069518C0990 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		3752C8408DB3E3B611FD7FDF /* FillerFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FillerFilterTests.swift; sourceTree = "<group>"; };
 		3C6BDFABE2324E58C6E17B12 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
@@ -105,6 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				7CB9C0404521BB79023065A3 /* VoxScribe */,
+				3DEA014D9BD8F5E4F1523186 /* VoxScribe */,
 				C95DCF9CCC2258E3E0BD7DB4 /* VoxScribeTests */,
 				25558BE13427928DC3F4FF40 /* Products */,
 			);
@@ -128,6 +130,15 @@
 				84198B5F12056E73B799CAFF /* VoxScribeApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		3DEA014D9BD8F5E4F1523186 /* VoxScribe */ = {
+			isa = PBXGroup;
+			children = (
+				2BFE46030D501627D310BE0B /* Local.xcconfig */,
+			);
+			name = VoxScribe;
+			path = .;
 			sourceTree = "<group>";
 		};
 		7421190AD9BA02871F14899A /* UI */ = {
@@ -242,6 +253,10 @@
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					3BD43F199A3FEF0F42376684 = {
+						DevelopmentTeam = A95D5ZX82P;
+						ProvisioningStyle = Automatic;
+					};
+					F4270E417D72153DD0289225 = {
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -446,6 +461,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -465,6 +481,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -482,6 +499,7 @@
 		};
 		F16301556ACC5629CD24B7D2 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2BFE46030D501627D310BE0B /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = VoxScribe/Resources/VoxScribe.entitlements;
@@ -506,6 +524,7 @@
 		};
 		FFEFBAED8345D668C65B0C93 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2BFE46030D501627D310BE0B /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = VoxScribe/Resources/VoxScribe.entitlements;

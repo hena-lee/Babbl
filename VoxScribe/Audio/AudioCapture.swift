@@ -1,5 +1,4 @@
 import AVFoundation
-import Accelerate
 
 final class AudioCapture {
     private var audioEngine: AVAudioEngine?
@@ -11,6 +10,8 @@ final class AudioCapture {
         let engine = AVAudioEngine()
         let inputNode = engine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
+
+        print("[VoxScribe:Audio] Input format: \(inputFormat.sampleRate)Hz, \(inputFormat.channelCount)ch, \(inputFormat.commonFormat.rawValue)")
 
         let targetFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
@@ -27,13 +28,24 @@ final class AudioCapture {
         recordedSamples = []
         lock.unlock()
 
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self] buffer, _ in
+        var bufferCount = 0
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: inputFormat) { [weak self] buffer, _ in
+            bufferCount += 1
+            if bufferCount <= 3 {
+                // Log first few buffers to verify we're getting real audio
+                if let data = buffer.floatChannelData?[0] {
+                    let samples = Array(UnsafeBufferPointer(start: data, count: min(Int(buffer.frameLength), 10)))
+                    let maxVal = samples.map { abs($0) }.max() ?? 0
+                    print("[VoxScribe:Audio] Buffer #\(bufferCount): \(buffer.frameLength) frames, max amplitude: \(maxVal)")
+                }
+            }
             self?.processAudioBuffer(buffer, converter: converter, targetFormat: targetFormat)
         }
 
         engine.prepare()
         try engine.start()
         audioEngine = engine
+        print("[VoxScribe:Audio] Engine started")
     }
 
     func stopRecording() -> [Float]? {
@@ -45,6 +57,14 @@ final class AudioCapture {
         let samples = recordedSamples
         recordedSamples = []
         lock.unlock()
+
+        if !samples.isEmpty {
+            let maxAmplitude = samples.map { abs($0) }.max() ?? 0
+            let rms = sqrt(samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count))
+            print("[VoxScribe:Audio] Captured \(samples.count) samples (\(String(format: "%.1f", Double(samples.count) / sampleRate))s), max amplitude: \(maxAmplitude), RMS: \(rms)")
+        } else {
+            print("[VoxScribe:Audio] No samples captured!")
+        }
 
         return samples.isEmpty ? nil : samples
     }
@@ -78,7 +98,7 @@ final class AudioCapture {
         }
 
         if let error = error {
-            print("Audio conversion error: \(error)")
+            print("[VoxScribe:Audio] Conversion error: \(error)")
             return
         }
 
@@ -93,14 +113,11 @@ final class AudioCapture {
 
 enum AudioCaptureError: LocalizedError {
     case converterCreationFailed
-    case microphoneAccessDenied
 
     var errorDescription: String? {
         switch self {
         case .converterCreationFailed:
             return "Failed to create audio format converter"
-        case .microphoneAccessDenied:
-            return "Microphone access is required. Please grant permission in System Settings > Privacy & Security > Microphone."
         }
     }
 }

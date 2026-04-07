@@ -1,43 +1,44 @@
 import SwiftUI
 import KeyboardShortcuts
 
-struct SettingsView: View {
-    @EnvironmentObject var appState: AppState
-
-    var body: some View {
-        TabView {
-            GeneralSettingsView()
-                .environmentObject(appState)
-                .tabItem {
-                    Label("General", systemImage: "gear")
-                }
-
-            ModelSettingsView()
-                .environmentObject(appState)
-                .tabItem {
-                    Label("Model", systemImage: "cpu")
-                }
-
-            FilterSettingsView()
-                .tabItem {
-                    Label("Filters", systemImage: "line.3.horizontal.decrease.circle")
-                }
-        }
-        .frame(width: 480, height: 360)
-    }
-}
-
 // MARK: - General Settings
 
 struct GeneralSettingsView: View {
     @EnvironmentObject var appState: AppState
     @AppStorage("outputMode") private var outputMode = "typing"
     @AppStorage("launchAtLogin") private var launchAtLogin = false
+    @AppStorage("hotkeyMode") private var hotkeyMode = HotkeyMode.optionDoubleTap.rawValue
+    @State private var isAccessibilityGranted = AXIsProcessTrusted()
+
+    let accessibilityTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
 
     var body: some View {
         Form {
             Section("Keyboard Shortcut") {
-                KeyboardShortcuts.Recorder("Toggle Recording:", name: .toggleRecording)
+                Picker("Activation:", selection: $hotkeyMode) {
+                    ForEach(HotkeyMode.allCases) { mode in
+                        VStack(alignment: .leading) {
+                            Text(mode.displayName)
+                        }
+                        .tag(mode.rawValue)
+                    }
+                }
+                .onChange(of: hotkeyMode) { _, newValue in
+                    if let mode = HotkeyMode(rawValue: newValue) {
+                        appState.hotkeyManager?.mode = mode
+                    }
+                }
+
+                if hotkeyMode == HotkeyMode.customShortcut.rawValue {
+                    KeyboardShortcuts.Recorder("Custom Shortcut:", name: .toggleRecording)
+                }
+
+                // Show current mode description
+                if let mode = HotkeyMode(rawValue: hotkeyMode) {
+                    Text(mode.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
 
             Section("Output") {
@@ -56,7 +57,7 @@ struct GeneralSettingsView: View {
 
             Section("Permissions") {
                 HStack {
-                    if AXIsProcessTrusted() {
+                    if isAccessibilityGranted {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
                         Text("Accessibility access granted")
@@ -71,6 +72,9 @@ struct GeneralSettingsView: View {
                     }
                 }
                 .help("Required for typing text into other apps")
+                .onReceive(accessibilityTimer) { _ in
+                    isAccessibilityGranted = AXIsProcessTrusted()
+                }
             }
         }
         .formStyle(.grouped)

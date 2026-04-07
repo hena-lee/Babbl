@@ -13,6 +13,9 @@ build/
 # Models (downloaded at runtime)
 models/
 
+# Local config (contains developer team ID)
+Local.xcconfig
+
 # IDE
 .idea/
 .vscode/

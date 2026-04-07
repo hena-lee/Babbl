@@ -25,9 +25,17 @@ enum WhisperModel: String, CaseIterable, Identifiable, Sendable {
 final class WhisperTranscriber {
     private var whisperKit: WhisperKit?
 
+    private static var downloadBase: URL {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let folder = appSupport.appendingPathComponent("VoxScribe/Models", isDirectory: true)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }
+
     func loadModel(_ model: WhisperModel) async throws {
         let kit = try await WhisperKit(
             model: model.rawValue,
+            downloadBase: Self.downloadBase,
             verbose: false,
             prewarm: true,
             load: true,

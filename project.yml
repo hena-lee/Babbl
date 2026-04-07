@@ -33,6 +33,9 @@ targets:
         CODE_SIGN_ENTITLEMENTS: VoxScribe/Resources/VoxScribe.entitlements
         CODE_SIGN_STYLE: Automatic
         ENABLE_HARDENED_RUNTIME: true
+    configFiles:
+      Debug: Local.xcconfig
+      Release: Local.xcconfig
     dependencies:
       - package: WhisperKit
       - package: KeyboardShortcuts
@@ -54,3 +57,4 @@ targets:
         SWIFT_VERSION: "5"
         SWIFT_STRICT_CONCURRENCY: targeted
         GENERATE_INFOPLIST_FILE: true
+        CODE_SIGN_STYLE: Automatic
