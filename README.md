@@ -6,13 +6,16 @@ Intelligent voice-to-text for macOS. Transcribe speech locally with automatic fi
 
 ## Features
 
-- **Local transcription** — powered by WhisperKit, runs entirely on-device. No data leaves your Mac.
-- **Filler word removal** — automatically strips "um", "uh", "like", "you know", etc.
+- **Local transcription** — powered by WhisperKit, runs entirely on-device with zero network calls
+- **Smart filler removal** — context-aware filtering of "um", "like", "you know", "basically", etc. with per-word toggles in Settings
+- **Media pause/resume** — automatically pauses YouTube, Spotify, or any playing media during recording, resumes when done
+- **Recording overlay** — floating waveform visualization + timer while recording, status on completion
+- **Auto-paste** — transcribed text is pasted directly into the active app, with clipboard fallback
+- **Configurable hotkeys** — double-tap Option (default), or set a custom shortcut
+- **Multiple Whisper models** — choose from Tiny to Large depending on speed/accuracy needs
+- **Encrypted history** — transcription history is AES-256-GCM encrypted with Keychain-managed keys
 - **Menu bar app** — lives in your menu bar, no Dock icon
-- **Option key hotkey** — double-tap Option to start/stop recording
-- **Auto-paste** — transcribed text is pasted directly into the active app
-- **Recording overlay** — floating waveform + timer while recording, status on completion
-- **Transcription history** — every transcription is saved locally, so nothing is ever lost
+- **Launch at login** — optional, configurable in Settings
 
 ## Requirements
 
@@ -34,10 +37,21 @@ Intelligent voice-to-text for macOS. Transcribe speech locally with automatic fi
 4. Open `Babbl.xcodeproj` and run (Cmd+R)
 5. Grant microphone and accessibility permissions when prompted
 
+## Privacy & Security
+
+- No network access — audio and transcriptions never leave your Mac
+- Transcription history encrypted at rest (AES-256-GCM, keys stored in macOS Keychain)
+- Clipboard cleared after paste
+- Temporary audio files cleaned up immediately after processing
+- Hardened runtime enabled
+- Minimal entitlements (microphone access only)
+
 ## Tech Stack
 
 - Swift / SwiftUI
 - WhisperKit (on-device speech-to-text)
+- Core Audio / vDSP (native sample rate recording + resampling)
+- CryptoKit (AES-256-GCM encryption)
 - KeyboardShortcuts (hotkey management)
 - AVFoundation (audio capture)
 
