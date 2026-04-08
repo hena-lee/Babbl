@@ -8,6 +8,7 @@ struct GeneralSettingsView: View {
     @AppStorage("outputMode") private var outputMode = "typing"
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("hotkeyMode") private var hotkeyMode = HotkeyMode.optionDoubleTap.rawValue
+    @AppStorage("pauseMediaDuringRecording") private var pauseMediaDuringRecording = true
     @State private var isAccessibilityGranted = AXIsProcessTrusted()
 
     let accessibilityTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
@@ -49,6 +50,13 @@ struct GeneralSettingsView: View {
                 .onChange(of: outputMode) { _, newValue in
                     appState.textInserter.mode = newValue == "typing" ? .typing : .clipboard
                 }
+            }
+
+            Section("Media") {
+                Toggle("Pause media during recording", isOn: $pauseMediaDuringRecording)
+                Text("Pauses music or video playback while recording, then resumes when done.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
 
             Section("Startup") {

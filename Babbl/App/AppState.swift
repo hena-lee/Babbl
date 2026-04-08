@@ -41,6 +41,7 @@ final class AppState: ObservableObject {
     let textInserter = TextInserter()
     let transcriptionStore = TranscriptionStore()
     let overlayController = OverlayWindowController()
+    let mediaController = MediaController()
     var hotkeyManager: HotkeyManager?
 
     // Track the app that was active before we started recording
@@ -135,6 +136,11 @@ final class AppState: ObservableObject {
         recordingStartTime = Date()
         Log.general.info("Starting recording")
 
+        // Pause background media if the user enabled this setting
+        if UserDefaults.standard.bool(forKey: "pauseMediaDuringRecording") {
+            mediaController.pauseMedia()
+        }
+
         do {
             try audioCapture.startRecording()
             isRecording = true
@@ -144,6 +150,7 @@ final class AppState: ObservableObject {
         } catch {
             errorMessage = "Failed to start recording: \(error.localizedDescription)"
             Log.general.error("Failed to start recording: \(error.localizedDescription)")
+            mediaController.resumeIfPaused()
         }
     }
 
@@ -157,6 +164,7 @@ final class AppState: ObservableObject {
         guard let audio = audioBuffer, !audio.isEmpty else {
             errorMessage = "No audio recorded"
             overlayPhase = .hidden
+            mediaController.resumeIfPaused()
             Log.general.warning("No audio data captured")
             return
         }
@@ -208,12 +216,14 @@ final class AppState: ObservableObject {
                 if shouldSkipPaste {
                     Log.general.info("Skipping paste (re-triggered during transcription)")
                     isTranscribing = false
+                    mediaController.resumeIfPaused()
                     return
                 }
 
                 guard !cleanedText.isEmpty else {
                     Log.general.warning("Transcription produced empty text, nothing to paste")
                     isTranscribing = false
+                    mediaController.resumeIfPaused()
                     overlayPhase = .noSpeech
                     let phaseAtSet = overlayPhase
                     try await Task.sleep(nanoseconds: 3_000_000_000)
@@ -231,6 +241,7 @@ final class AppState: ObservableObject {
                 Log.general.info("Text insertion completed (pasted: \(didPaste))")
 
                 isTranscribing = false
+                mediaController.resumeIfPaused()
                 overlayPhase = didPaste ? .success : .failure
 
                 // Auto-dismiss overlay
@@ -244,6 +255,7 @@ final class AppState: ObservableObject {
                 errorMessage = "Transcription failed: \(error.localizedDescription)"
                 Log.general.error("Transcription failed: \(error.localizedDescription)")
                 isTranscribing = false
+                mediaController.resumeIfPaused()
 
                 if !shouldSkipPaste {
                     overlayPhase = .failure

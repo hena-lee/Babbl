@@ -11,6 +11,7 @@
 		1819643332D2CE395740DAA6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 816B88064B2BCD29744976E9 /* SettingsView.swift */; };
 		1BF1BEBDD84CAAEA09948B6B /* FillerFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60401A8D917100EB2D8D65D /* FillerFilter.swift */; };
 		2A1C64CAD29E5277E1CFA605 /* TranscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BAF95474A056D9AD39D476 /* TranscriptionStore.swift */; };
+		2B8B816F40669B33FF531D85 /* MediaController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66FD81B88E0D9899C89FE8BB /* MediaController.swift */; };
 		32F68794C4562D2D94CB7296 /* TranscriptionRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41DE425CB232CC83DE007FF6 /* TranscriptionRecord.swift */; };
 		593AFD2EC40CAF5F7D240AB1 /* AudioCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FC1F6B77DB66523CF2DF28 /* AudioCapture.swift */; };
 		736551B3F4BAEC274AD420B8 /* MainWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C339C2A0FF2CE1C09EEAD84E /* MainWindowController.swift */; };
@@ -58,6 +59,7 @@
 		541AF85FBC6BD30524BC97D7 /* TextInserter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInserter.swift; sourceTree = "<group>"; };
 		5B47DF0ADE3BC60FB902D93F /* TextInserterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInserterTests.swift; sourceTree = "<group>"; };
 		5F7C148A57EEBAB4438A88C1 /* FillerFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FillerFilterTests.swift; sourceTree = "<group>"; };
+		66FD81B88E0D9899C89FE8BB /* MediaController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaController.swift; sourceTree = "<group>"; };
 		6C58AC0EAD9522FC1C2729CC /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		7757FB7B2E7EC8F1874EC881 /* BabblApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BabblApp.swift; sourceTree = "<group>"; };
 		816B88064B2BCD29744976E9 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				26FC1F6B77DB66523CF2DF28 /* AudioCapture.swift */,
+				66FD81B88E0D9899C89FE8BB /* MediaController.swift */,
 			);
 			path = Audio;
 			sourceTree = "<group>";
@@ -334,6 +337,7 @@
 				E568021CF6EBD40E240734F4 /* Log.swift in Sources */,
 				98EF4994AD46DD6EECCA4060 /* MainAppView.swift in Sources */,
 				736551B3F4BAEC274AD420B8 /* MainWindowController.swift in Sources */,
+				2B8B816F40669B33FF531D85 /* MediaController.swift in Sources */,
 				D7CA08884F58CF9F6C4F9854 /* MenuBarView.swift in Sources */,
 				C5BF6FF7BB738CD5B09418A0 /* OverlayWindowController.swift in Sources */,
 				A4EA855D5C8A05E23EEF09E2 /* RecordingOverlayView.swift in Sources */,

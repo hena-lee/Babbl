@@ -14,6 +14,11 @@ struct BabblApp: App {
                     guard !hasInitialized else { return }
                     hasInitialized = true
 
+                    // Register defaults for settings
+                    UserDefaults.standard.register(defaults: [
+                        "pauseMediaDuringRecording": true
+                    ])
+
                     appState.hotkeyManager = HotkeyManager(appState: appState)
                     Log.general.info("App started, hotkey manager initialized (mode: \(appState.hotkeyManager?.mode.displayName ?? "unknown"))")
 
