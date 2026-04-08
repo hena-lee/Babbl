@@ -59,8 +59,7 @@ Intelligent voice-to-text for macOS. Transcribe speech locally with automatic fi
 
 Babbl is free to use. If it saves you time, consider supporting its development — pay whatever you feel it's worth.
 
-- [Ko-fi](https://ko-fi.com/babbl) — one-time or recurring, no account needed
-- [GitHub Sponsors](https://github.com/sponsors/hena-lee) — for developers with a GitHub account
+- [Ko-fi](https://ko-fi.com/h555exe) — one-time or recurring, no account needed
 
 ## License
 

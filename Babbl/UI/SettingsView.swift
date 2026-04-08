@@ -104,7 +104,7 @@ struct GeneralSettingsView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Link(destination: URL(string: "https://ko-fi.com/babbl")!) {
+                    Link(destination: URL(string: "https://ko-fi.com/h555exe")!) {
                         Text("Support Babbl")
                             .font(.caption)
                             .fontWeight(.medium)
