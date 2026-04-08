@@ -16,7 +16,16 @@ struct BabblApp: App {
 
                     // Register defaults for settings
                     UserDefaults.standard.register(defaults: [
-                        "pauseMediaDuringRecording": true
+                        "pauseMediaDuringRecording": true,
+                        "filterEnabled": true,
+                        "filterUm": true,
+                        "filterLike": true,
+                        "filterYouKnow": true,
+                        "filterBasically": true,
+                        "filterActually": true,
+                        "filterSo": true,
+                        "filterIMean": true,
+                        "filterLiterally": true
                     ])
 
                     appState.hotkeyManager = HotkeyManager(appState: appState)

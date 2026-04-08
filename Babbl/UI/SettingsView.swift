@@ -1,15 +1,16 @@
 import SwiftUI
 import KeyboardShortcuts
+import ServiceManagement
 
 // MARK: - General Settings
 
 struct GeneralSettingsView: View {
     @EnvironmentObject var appState: AppState
     @AppStorage("outputMode") private var outputMode = "typing"
-    @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("hotkeyMode") private var hotkeyMode = HotkeyMode.optionDoubleTap.rawValue
     @AppStorage("pauseMediaDuringRecording") private var pauseMediaDuringRecording = true
     @State private var isAccessibilityGranted = AXIsProcessTrusted()
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
     let accessibilityTimer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
 
@@ -61,6 +62,18 @@ struct GeneralSettingsView: View {
 
             Section("Startup") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
+                    .onChange(of: launchAtLogin) { _, newValue in
+                        do {
+                            if newValue {
+                                try SMAppService.mainApp.register()
+                            } else {
+                                try SMAppService.mainApp.unregister()
+                            }
+                        } catch {
+                            Log.general.error("Failed to update launch at login: \(error.localizedDescription)")
+                            launchAtLogin = !newValue
+                        }
+                    }
             }
 
             Section("Permissions") {
@@ -164,7 +177,6 @@ struct ModelSettingsView: View {
 struct FilterSettingsView: View {
     @AppStorage("filterEnabled") private var filterEnabled = true
     @AppStorage("filterUm") private var filterUm = true
-    @AppStorage("filterUh") private var filterUh = true
     @AppStorage("filterLike") private var filterLike = true
     @AppStorage("filterYouKnow") private var filterYouKnow = true
     @AppStorage("filterBasically") private var filterBasically = true

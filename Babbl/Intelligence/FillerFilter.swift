@@ -8,7 +8,14 @@ final class FillerFilter {
         loadDefaultFillers()
     }
 
+    /// Returns true if a filter setting is enabled, defaulting to true when unset.
+    private static func isEnabled(_ key: String) -> Bool {
+        UserDefaults.standard.object(forKey: key) == nil || UserDefaults.standard.bool(forKey: key)
+    }
+
     func filter(_ text: String) -> String {
+        guard Self.isEnabled("filterEnabled") else { return text }
+
         var result = text
 
         // Pass 1: Remove unconditional fillers (standalone words)
@@ -26,6 +33,8 @@ final class FillerFilter {
     // MARK: - Unconditional Fillers
 
     private func removeUnconditionalFillers(_ text: String) -> String {
+        guard Self.isEnabled("filterUm") else { return text }
+
         var words = tokenize(text)
 
         words = words.filter { token in
@@ -42,6 +51,7 @@ final class FillerFilter {
         var result = text
 
         for filler in conditionalFillers {
+            if let key = filler.settingsKey, !Self.isEnabled(key) { continue }
             result = filler.apply(to: result)
         }
 
@@ -136,6 +146,7 @@ final class FillerFilter {
             // "like" as filler: remove when preceded by "was/is/it's/just/really" or between commas
             ConditionalFiller(
                 phrase: "like",
+                settingsKey: "filterLike",
                 removePatterns: [
                     #"\b(was|is|it's|just|really|pretty|so)\s+like\b"#,  // "was like" filler
                     #",\s*like,\s*"#,                                      // ", like, "
@@ -152,6 +163,7 @@ final class FillerFilter {
             // "you know" as filler
             ConditionalFiller(
                 phrase: "you know",
+                settingsKey: "filterYouKnow",
                 removePatterns: [
                     #",\s*you know,?\s*"#,          // ", you know, "
                     #"\byou know\s+(like|um|uh)\b"# // "you know like"
@@ -164,6 +176,7 @@ final class FillerFilter {
             // "I mean" as filler at sentence start or as interjection
             ConditionalFiller(
                 phrase: "I mean",
+                settingsKey: "filterIMean",
                 removePatterns: [
                     #"(?:^|[.!?]\s+)I mean,?\s*"#, // Sentence-starting "I mean"
                     #",\s*I mean,\s*"#              // ", I mean, "
@@ -174,6 +187,7 @@ final class FillerFilter {
             // "basically" as hedge
             ConditionalFiller(
                 phrase: "basically",
+                settingsKey: "filterBasically",
                 removePatterns: [
                     #"(?:^|[.!?]\s+)basically,?\s*"#, // Sentence-starting
                     #",?\s*basically,?\s*"#             // Mid-sentence filler
@@ -184,6 +198,7 @@ final class FillerFilter {
             // "actually" as filler
             ConditionalFiller(
                 phrase: "actually",
+                settingsKey: "filterActually",
                 removePatterns: [
                     #"(?:^|[.!?]\s+)actually,?\s*"#, // Sentence-starting
                 ],
@@ -195,6 +210,7 @@ final class FillerFilter {
             // "literally" as filler
             ConditionalFiller(
                 phrase: "literally",
+                settingsKey: "filterLiterally",
                 removePatterns: [
                     #"\bliterally\s+(just|like|so|the)\b"# // "literally just"
                 ],
@@ -204,6 +220,7 @@ final class FillerFilter {
             // "so" as sentence-starting filler
             ConditionalFiller(
                 phrase: "so",
+                settingsKey: "filterSo",
                 removePatterns: [
                     #"(?:^|[.!?]\s+)so,?\s+(?!that\b)"# // "So, I went" but not "so that"
                 ],
@@ -218,6 +235,7 @@ final class FillerFilter {
             // "sort of" / "kind of" as hedges
             ConditionalFiller(
                 phrase: "sort of",
+                settingsKey: nil,
                 removePatterns: [
                     #"\bsort of\s+(like|um|uh)\b"#, // "sort of like"
                     #",\s*sort of,?\s*"#             // ", sort of, "
@@ -229,6 +247,7 @@ final class FillerFilter {
 
             ConditionalFiller(
                 phrase: "kind of",
+                settingsKey: nil,
                 removePatterns: [
                     #",\s*kind of,?\s*"#,              // ", kind of, "
                     #"\bkind of\s+(like|um|uh)\b"#      // "kind of like"
@@ -243,6 +262,7 @@ final class FillerFilter {
             // "right" as discourse marker
             ConditionalFiller(
                 phrase: "right",
+                settingsKey: nil,
                 removePatterns: [
                     #",\s*right\??\s*,?"#, // ", right, " or ", right?"
                 ],
@@ -260,6 +280,7 @@ final class FillerFilter {
 
 private struct ConditionalFiller {
     let phrase: String
+    let settingsKey: String?
     let removePatterns: [String]
     let keepPatterns: [String]
 
