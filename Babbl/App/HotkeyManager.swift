@@ -1,3 +1,4 @@
+import os.log
 import Cocoa
 import KeyboardShortcuts
 
@@ -60,11 +61,11 @@ final class HotkeyManager {
             setupModifierMonitor()
             // Disable the KeyboardShortcuts listener when using modifier mode
             KeyboardShortcuts.onKeyUp(for: .toggleRecording) { }
-            print("[Babbl:Hotkey] Set up \(mode.displayName) monitor")
+            Log.hotkey.info("Set up \(self.mode.displayName) monitor")
 
         case .customShortcut:
             setupCustomShortcut()
-            print("[Babbl:Hotkey] Set up custom shortcut monitor")
+            Log.hotkey.info("Set up custom shortcut monitor")
         }
     }
 
@@ -125,14 +126,14 @@ final class HotkeyManager {
             switch mode {
             case .optionPress:
                 // Single press & release triggers toggle
-                print("[Babbl:Hotkey] Option pressed & released, toggling recording")
+                Log.hotkey.info("Option pressed & released, toggling recording")
                 appState.toggleRecording()
 
             case .optionDoubleTap:
                 if let lastPress = lastOptionPressTime,
                    now.timeIntervalSince(lastPress) < doubleTapInterval {
                     // Second tap within interval - trigger!
-                    print("[Babbl:Hotkey] Option double-tapped, toggling recording")
+                    Log.hotkey.info("Option double-tapped, toggling recording")
                     lastOptionPressTime = nil
                     appState.toggleRecording()
                 } else {

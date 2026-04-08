@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15A11B0AA5C9FCB9E02532A2 /* HistoryCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = D31BACDCECB482A98C5AED61 /* HistoryCrypto.swift */; };
 		1819643332D2CE395740DAA6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 816B88064B2BCD29744976E9 /* SettingsView.swift */; };
 		1BF1BEBDD84CAAEA09948B6B /* FillerFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60401A8D917100EB2D8D65D /* FillerFilter.swift */; };
 		2A1C64CAD29E5277E1CFA605 /* TranscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30BAF95474A056D9AD39D476 /* TranscriptionStore.swift */; };
@@ -27,6 +28,7 @@
 		D8E91BC27D10C1D3B366C069 /* TextInserterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B47DF0ADE3BC60FB902D93F /* TextInserterTests.swift */; };
 		E357D019F3EED242B441D25F /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE21F40D2ADC7EA6BC365001 /* ClipboardManager.swift */; };
 		E47603B07FA8C91D43B81E34 /* FillerFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F7C148A57EEBAB4438A88C1 /* FillerFilterTests.swift */; };
+		E568021CF6EBD40E240734F4 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DFB4D899599779958BC247C /* Log.swift */; };
 		EB2A30263E4168AD4893AC7C /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C58AC0EAD9522FC1C2729CC /* HotkeyManager.swift */; };
 		EFC18E35B45873A97C02BF33 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9902A28B82A6857ADF458AFA /* Assets.xcassets */; };
 		F77A357BDE281867781626BD /* AppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 827FE41C4D3F7B36B396FA38 /* AppStateTests.swift */; };
@@ -52,6 +54,7 @@
 		305D534DCD92558071784370 /* RecordingOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOverlayView.swift; sourceTree = "<group>"; };
 		30BAF95474A056D9AD39D476 /* TranscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionStore.swift; sourceTree = "<group>"; };
 		41DE425CB232CC83DE007FF6 /* TranscriptionRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionRecord.swift; sourceTree = "<group>"; };
+		513698C6A84876CA75ABE08C /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 		541AF85FBC6BD30524BC97D7 /* TextInserter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInserter.swift; sourceTree = "<group>"; };
 		5B47DF0ADE3BC60FB902D93F /* TextInserterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextInserterTests.swift; sourceTree = "<group>"; };
 		5F7C148A57EEBAB4438A88C1 /* FillerFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FillerFilterTests.swift; sourceTree = "<group>"; };
@@ -60,12 +63,13 @@
 		816B88064B2BCD29744976E9 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		826EF6A6C7BC10E7EE64DBC2 /* Babbl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Babbl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		827FE41C4D3F7B36B396FA38 /* AppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateTests.swift; sourceTree = "<group>"; };
+		8DFB4D899599779958BC247C /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		9902A28B82A6857ADF458AFA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B60401A8D917100EB2D8D65D /* FillerFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FillerFilter.swift; sourceTree = "<group>"; };
 		B7A17F2E5C383BEB0BBF3FBB /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		C339C2A0FF2CE1C09EEAD84E /* MainWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowController.swift; sourceTree = "<group>"; };
-		C78B613AC87381FE4993EC72 /* Local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.xcconfig; sourceTree = "<group>"; };
 		C94B30459D0538CF9A26867E /* KeyboardShortcuts+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyboardShortcuts+Extensions.swift"; sourceTree = "<group>"; };
+		D31BACDCECB482A98C5AED61 /* HistoryCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryCrypto.swift; sourceTree = "<group>"; };
 		D7B1902F169827CE35C24E38 /* OverlayWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayWindowController.swift; sourceTree = "<group>"; };
 		D84D2DA786CC28975D883E0F /* BabblTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BabblTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE21F40D2ADC7EA6BC365001 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
@@ -176,16 +180,26 @@
 				7757FB7B2E7EC8F1874EC881 /* BabblApp.swift */,
 				6C58AC0EAD9522FC1C2729CC /* HotkeyManager.swift */,
 				C94B30459D0538CF9A26867E /* KeyboardShortcuts+Extensions.swift */,
+				8DFB4D899599779958BC247C /* Log.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		8655F43BCBC428B0260C0257 /* babbl */ = {
+			isa = PBXGroup;
+			children = (
+				513698C6A84876CA75ABE08C /* Local.xcconfig */,
+			);
+			name = babbl;
+			path = .;
 			sourceTree = "<group>";
 		};
 		AF9E23553BA6C270265A0490 = {
 			isa = PBXGroup;
 			children = (
 				59D1712660CD1C6E2E634AC2 /* Babbl */,
+				8655F43BCBC428B0260C0257 /* babbl */,
 				0F87CE09134606D28689912A /* BabblTests */,
-				D806E3F3E2D14D76F115419E /* VoxScribe */,
 				47772383FEF7DE698DEE38EB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -193,19 +207,11 @@
 		B579F8905A5C1476D305FAFB /* Storage */ = {
 			isa = PBXGroup;
 			children = (
+				D31BACDCECB482A98C5AED61 /* HistoryCrypto.swift */,
 				41DE425CB232CC83DE007FF6 /* TranscriptionRecord.swift */,
 				30BAF95474A056D9AD39D476 /* TranscriptionStore.swift */,
 			);
 			path = Storage;
-			sourceTree = "<group>";
-		};
-		D806E3F3E2D14D76F115419E /* VoxScribe */ = {
-			isa = PBXGroup;
-			children = (
-				C78B613AC87381FE4993EC72 /* Local.xcconfig */,
-			);
-			name = VoxScribe;
-			path = .;
 			sourceTree = "<group>";
 		};
 		F6E66895E590EF563773FE3D /* Transcription */ = {
@@ -322,8 +328,10 @@
 				FA947886B77679612FE7DFC5 /* BabblApp.swift in Sources */,
 				E357D019F3EED242B441D25F /* ClipboardManager.swift in Sources */,
 				1BF1BEBDD84CAAEA09948B6B /* FillerFilter.swift in Sources */,
+				15A11B0AA5C9FCB9E02532A2 /* HistoryCrypto.swift in Sources */,
 				EB2A30263E4168AD4893AC7C /* HotkeyManager.swift in Sources */,
 				9F513595A6712A3630812C80 /* KeyboardShortcuts+Extensions.swift in Sources */,
+				E568021CF6EBD40E240734F4 /* Log.swift in Sources */,
 				98EF4994AD46DD6EECCA4060 /* MainAppView.swift in Sources */,
 				736551B3F4BAEC274AD420B8 /* MainWindowController.swift in Sources */,
 				D7CA08884F58CF9F6C4F9854 /* MenuBarView.swift in Sources */,
@@ -424,7 +432,7 @@
 		};
 		27FE943B22F42CDC7A6BFFE4 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C78B613AC87381FE4993EC72 /* Local.xcconfig */;
+			baseConfigurationReference = 513698C6A84876CA75ABE08C /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Babbl/Resources/Babbl.entitlements;
@@ -505,7 +513,7 @@
 		};
 		4ED7E93BD2F4992EC6686BEE /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C78B613AC87381FE4993EC72 /* Local.xcconfig */;
+			baseConfigurationReference = 513698C6A84876CA75ABE08C /* Local.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -526,7 +534,7 @@
 		};
 		93A38F3C4853967EC25EFA04 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C78B613AC87381FE4993EC72 /* Local.xcconfig */;
+			baseConfigurationReference = 513698C6A84876CA75ABE08C /* Local.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Babbl/Resources/Babbl.entitlements;
@@ -551,7 +559,7 @@
 		};
 		F1395459A703605C486013E8 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C78B613AC87381FE4993EC72 /* Local.xcconfig */;
+			baseConfigurationReference = 513698C6A84876CA75ABE08C /* Local.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;

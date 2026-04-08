@@ -1,3 +1,4 @@
+import os.log
 import SwiftUI
 import AppKit
 
@@ -7,10 +8,10 @@ final class MainWindowController {
     private var window: NSWindow?
 
     func showWindow(appState: AppState) {
-        print("[Babbl] Opening main window...")
+        Log.general.info("Opening main window...")
 
         if let existing = window, existing.isVisible {
-            print("[Babbl] Window already visible, bringing to front")
+            Log.general.info("Window already visible, bringing to front")
             existing.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
@@ -43,7 +44,7 @@ final class MainWindowController {
         NSApp.activate(ignoringOtherApps: true)
 
         window = newWindow
-        print("[Babbl] Main window opened successfully, activation policy set to .regular")
+        Log.general.info("Main window opened successfully, activation policy set to .regular")
 
         // When the window closes, revert to accessory (menu bar only) mode
         NotificationCenter.default.addObserver(
@@ -51,7 +52,7 @@ final class MainWindowController {
             object: newWindow,
             queue: .main
         ) { [weak self] _ in
-            print("[Babbl] Main window closing, reverting to accessory activation policy")
+            Log.general.info("Main window closing, reverting to accessory activation policy")
             NSApp.setActivationPolicy(.accessory)
             self?.window = nil
         }

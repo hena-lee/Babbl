@@ -18,6 +18,8 @@ struct RecordingOverlayView: View {
                 SuccessPhaseView()
             case .failure:
                 FailurePhaseView()
+            case .noSpeech:
+                NoSpeechPhaseView()
             }
         }
         .padding(.horizontal, 16)
@@ -34,22 +36,20 @@ private struct RecordingPhaseView: View {
     let startTime: Date
     let amplitudePublisher: CurrentValueSubject<Float, Never>
 
-    @State private var elapsed: Int = 0
     @State private var amplitude: Float = 0
-
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         HStack(spacing: 12) {
             AudioLevelBars(amplitude: amplitude)
                 .frame(width: 32, height: 24)
 
-            Text(formatTime(elapsed))
-                .font(.system(size: 14, weight: .medium, design: .monospaced))
-                .foregroundStyle(.white)
-        }
-        .onReceive(timer) { _ in
-            elapsed = Int(Date().timeIntervalSince(startTime))
+            // TimelineView manages its own timer — immune to body re-evaluation
+            // from amplitude updates, unlike Timer.publish inside body
+            TimelineView(.periodic(from: startTime, by: 1)) { context in
+                Text(formatTime(max(0, Int(context.date.timeIntervalSince(startTime)))))
+                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.white)
+            }
         }
         .onReceive(amplitudePublisher) { value in
             amplitude = value
@@ -86,7 +86,7 @@ private struct AudioLevelBars: View {
         let maxHeight: CGFloat = 24
         // Each bar responds slightly differently to amplitude for visual variety
         let scale = CGFloat(amplitude) * (1.0 + Float(index % 3) * 0.3).toCGFloat
-        let height = minHeight + (maxHeight - minHeight) * min(scale * 8, 1.0)
+        let height = minHeight + (maxHeight - minHeight) * min(scale * 3, 1.0)
         return max(minHeight, height)
     }
 }
@@ -137,6 +137,22 @@ private struct FailurePhaseView: View {
                 .font(.system(size: 14))
 
             Text("Copied to clipboard — ⌘V to paste")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.white)
+        }
+    }
+}
+
+// MARK: - No Speech Phase
+
+private struct NoSpeechPhaseView: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "waveform.slash")
+                .foregroundStyle(.secondary)
+                .font(.system(size: 14))
+
+            Text("No speech detected")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.white)
         }

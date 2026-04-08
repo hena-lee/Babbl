@@ -6,7 +6,18 @@ final class OverlayWindowController {
 
     func show<V: View>(rootView: V) {
         if let existing = panel {
-            existing.contentView = NSHostingView(rootView: rootView)
+            let hostingView = NSHostingView(rootView: rootView)
+            existing.contentView = hostingView
+
+            // Resize panel to fit new content
+            let fittingSize = hostingView.fittingSize
+            let currentFrame = existing.frame
+            let newX = currentFrame.midX - fittingSize.width / 2
+            existing.setFrame(
+                NSRect(x: newX, y: currentFrame.origin.y, width: fittingSize.width, height: fittingSize.height),
+                display: true,
+                animate: false
+            )
             return
         }
 
@@ -28,16 +39,15 @@ final class OverlayWindowController {
         panel.titleVisibility = .hidden
 
         let hostingView = NSHostingView(rootView: rootView)
-        hostingView.frame = NSRect(x: 0, y: 0, width: 280, height: 52)
         panel.contentView = hostingView
-        panel.setContentSize(hostingView.fittingSize)
+        let fittingSize = hostingView.fittingSize
+        panel.setContentSize(fittingSize)
 
-        // Position: top center, below menu bar
+        // Position: bottom center, above the Dock
         if let screen = NSScreen.main {
             let screenFrame = screen.visibleFrame
-            let panelSize = panel.frame.size
-            let x = screenFrame.midX - panelSize.width / 2
-            let y = screenFrame.maxY - panelSize.height - 8
+            let x = screenFrame.midX - fittingSize.width / 2
+            let y = screenFrame.minY + 16
             panel.setFrameOrigin(NSPoint(x: x, y: y))
         }
 

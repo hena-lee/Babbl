@@ -1,3 +1,4 @@
+import os.log
 import SwiftUI
 import KeyboardShortcuts
 
@@ -108,7 +109,7 @@ struct DashboardTab: View {
                         color: appState.isRecording ? .red : .blue
                     ) {
                         if !appState.isModelLoaded {
-                            print("[Babbl] Record pressed but model not loaded, switching to Model tab")
+                            Log.general.info("Record pressed but model not loaded, switching to Model tab")
                             appState.errorMessage = "Please download a model first"
                             selectedTab = 2 // Switch to Model tab
                         } else {
@@ -123,7 +124,7 @@ struct DashboardTab: View {
                         description: hotkeyDescription,
                         color: .orange
                     ) {
-                        print("[Babbl] Hotkey card pressed, switching to General tab")
+                        Log.general.info("Hotkey card pressed, switching to General tab")
                         selectedTab = 1 // Switch to General tab
                     }
 
@@ -135,9 +136,9 @@ struct DashboardTab: View {
                         color: accessibilityGranted ? .green : .red
                     ) {
                         if accessibilityGranted {
-                            print("[Babbl] Accessibility already granted, no action needed")
+                            Log.general.info("Accessibility already granted, no action needed")
                         } else {
-                            print("[Babbl] Requesting accessibility permission...")
+                            Log.general.info("Requesting accessibility permission...")
                             TextInserter.requestAccessibilityPermission()
                             // Re-check after a delay (user may grant in System Settings)
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -208,7 +209,7 @@ struct DashboardTab: View {
         .padding()
         .onAppear {
             accessibilityGranted = AXIsProcessTrusted()
-            print("[Babbl] Dashboard appeared. Accessibility: \(accessibilityGranted), Model loaded: \(appState.isModelLoaded)")
+            Log.general.info("Dashboard appeared. Accessibility: \(accessibilityGranted), Model loaded: \(appState.isModelLoaded)")
         }
         .onReceive(accessibilityTimer) { _ in
             accessibilityGranted = AXIsProcessTrusted()

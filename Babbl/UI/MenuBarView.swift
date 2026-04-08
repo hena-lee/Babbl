@@ -1,3 +1,4 @@
+import os.log
 import SwiftUI
 import KeyboardShortcuts
 
@@ -98,7 +99,7 @@ struct MenuBarView: View {
             // Bottom actions
             HStack {
                 Button("Open Babbl") {
-                    print("[Babbl] Settings button pressed")
+                    Log.general.info("Settings button pressed")
                     MainWindowController.shared.showWindow(appState: appState)
                 }
                 Spacer()

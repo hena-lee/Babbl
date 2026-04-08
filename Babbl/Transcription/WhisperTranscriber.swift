@@ -1,3 +1,4 @@
+import os.log
 import Foundation
 import WhisperKit
 
@@ -35,7 +36,7 @@ final class WhisperTranscriber {
     func loadModel(_ model: WhisperModel) async throws {
         let localModelDir = Self.localModelFolder(for: model)
         let needsDownload = !Self.modelExistsLocally(model)
-        print("[Babbl:Transcriber] Loading model \(model.rawValue), download: \(needsDownload)")
+        Log.transcriber.info("Loading model \(model.rawValue), download: \(needsDownload)")
 
         let kit: WhisperKit
         if needsDownload {
@@ -81,20 +82,21 @@ final class WhisperTranscriber {
 
         let result = try await kit.transcribe(audioArray: audioSamples)
         let text = result.map { $0.text }.joined(separator: " ")
-        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Strip Whisper artifacts (e.g. "[BLANK_AUDIO]", "(silence)", etc.)
+        let cleaned = text
+            .replacingOccurrences(of: #"\[BLANK_AUDIO\]"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\(silence\)"#, with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned
     }
 }
 
 enum TranscriptionError: LocalizedError {
     case modelNotLoaded
-    case transcriptionFailed(String)
-
     var errorDescription: String? {
         switch self {
         case .modelNotLoaded:
             return "Whisper model is not loaded. Please download a model first."
-        case .transcriptionFailed(let detail):
-            return "Transcription failed: \(detail)"
         }
     }
 }

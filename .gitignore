@@ -2,7 +2,8 @@
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
 DerivedData/
-*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+# Ignore SPM build artifacts but track Package.resolved for supply chain safety
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/configuration/
 build/
 
 # macOS

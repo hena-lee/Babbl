@@ -1,3 +1,4 @@
+import os.log
 import SwiftUI
 
 @main
@@ -14,9 +15,10 @@ struct BabblApp: App {
                     hasInitialized = true
 
                     appState.hotkeyManager = HotkeyManager(appState: appState)
-                    print("[Babbl] App started, hotkey manager initialized (mode: \(appState.hotkeyManager?.mode.displayName ?? "unknown"))")
+                    Log.general.info("App started, hotkey manager initialized (mode: \(appState.hotkeyManager?.mode.displayName ?? "unknown"))")
 
-                    // Auto-request accessibility once on launch
+                    // Auto-request permissions on launch
+                    AudioCapture.requestMicrophoneAccess()
                     if !AXIsProcessTrusted() {
                         TextInserter.requestAccessibilityPermission()
                     }

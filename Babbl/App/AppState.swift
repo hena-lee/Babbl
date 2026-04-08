@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import os.log
 
 enum OverlayPhase: Equatable {
     case hidden
@@ -7,6 +8,7 @@ enum OverlayPhase: Equatable {
     case transcribing
     case success
     case failure
+    case noSpeech
 }
 
 @MainActor
@@ -61,6 +63,7 @@ final class AppState: ObservableObject {
 
     private func setupOverlayObserver() {
         overlaySubscription = $overlayPhase
+            .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink { [weak self] phase in
                 guard let self else { return }
@@ -75,6 +78,18 @@ final class AppState: ObservableObject {
                     self.overlayController.show(rootView: view)
                 }
             }
+    }
+
+    /// Strips control characters and enforces a length limit on transcription output.
+    private static func sanitize(_ text: String) -> String {
+        let maxLength = 10_000
+        let stripped = String(text.unicodeScalars.filter { scalar in
+            scalar.value >= 0x20 || scalar == "\n" || scalar == "\t"
+        })
+        if stripped.count > maxLength {
+            return String(stripped.prefix(maxLength))
+        }
+        return stripped
     }
 
     var formattedTimeSaved: String {
@@ -105,30 +120,30 @@ final class AppState: ObservableObject {
     private func startRecording() {
         guard isModelLoaded else {
             errorMessage = "Model not loaded. Please wait for download to complete."
-            print("[Babbl] ERROR: Tried to record but model not loaded")
+            Log.general.warning("Tried to record but model not loaded")
             return
         }
 
         // If transcription is in progress, let it finish in background (skip paste)
         if isTranscribing {
-            print("[Babbl] Re-triggered during transcription — background transcription will save to history, skip paste")
+            Log.general.info("Re-triggered during transcription — background transcription will save to history, skip paste")
             skipPasteForCurrentTranscription = true
         }
 
         // Remember which app was active before recording
         previousApp = NSWorkspace.shared.frontmostApplication
         recordingStartTime = Date()
-        print("[Babbl] Starting recording... Previous app: \(previousApp?.localizedName ?? "unknown")")
+        Log.general.info("Starting recording")
 
         do {
             try audioCapture.startRecording()
             isRecording = true
             errorMessage = nil
             overlayPhase = .recording(startTime: recordingStartTime!)
-            print("[Babbl] Recording started successfully")
+            Log.general.info("Recording started")
         } catch {
             errorMessage = "Failed to start recording: \(error.localizedDescription)"
-            print("[Babbl] ERROR starting recording: \(error)")
+            Log.general.error("Failed to start recording: \(error.localizedDescription)")
         }
     }
 
@@ -137,12 +152,12 @@ final class AppState: ObservableObject {
         let audioBuffer = audioCapture.stopRecording()
         let recordingDuration = recordingStartTime.map { Date().timeIntervalSince($0) } ?? 0
 
-        print("[Babbl] Recording stopped. Duration: \(String(format: "%.1f", recordingDuration))s, samples: \(audioBuffer?.count ?? 0)")
+        Log.general.info("Recording stopped. Duration: \(String(format: "%.1f", recordingDuration))s")
 
         guard let audio = audioBuffer, !audio.isEmpty else {
             errorMessage = "No audio recorded"
             overlayPhase = .hidden
-            print("[Babbl] ERROR: No audio data captured")
+            Log.general.warning("No audio data captured")
             return
         }
 
@@ -156,23 +171,23 @@ final class AppState: ObservableObject {
         // Restore focus to the previous app BEFORE transcription
         let targetApp = previousApp
         if let app = targetApp, !shouldSkipPaste {
-            print("[Babbl] Restoring focus to: \(app.localizedName ?? "unknown")")
+            Log.general.info("Restoring focus to previous app")
             app.activate()
         }
 
         Task {
             do {
-                print("[Babbl] Starting transcription...")
+                Log.general.info("Starting transcription...")
                 let startTime = Date()
                 let rawText = try await transcriber.transcribe(audioSamples: audio)
                 let transcribeTime = Date().timeIntervalSince(startTime)
-                print("[Babbl] Transcription completed in \(String(format: "%.1f", transcribeTime))s: \"\(rawText)\"")
+                Log.general.info("Transcription completed in \(String(format: "%.1f", transcribeTime))s (\(rawText.count) chars)")
 
                 lastTranscription = rawText
 
-                let cleanedText = fillerFilter.filter(rawText)
+                let filteredText = fillerFilter.filter(rawText)
+                let cleanedText = Self.sanitize(filteredText)
                 lastCleanedText = cleanedText
-                print("[Babbl] After filler removal: \"\(cleanedText)\"")
 
                 // Update stats
                 let wordCount = cleanedText.split(separator: " ").count
@@ -188,23 +203,32 @@ final class AppState: ObservableObject {
                     durationSeconds: recordingDuration
                 )
                 transcriptionStore.save(record)
-                print("[Babbl] Transcription saved to history")
+                Log.general.info("Transcription saved to history")
 
                 if shouldSkipPaste {
-                    // Re-trigger case: new recording already started, just save silently
-                    print("[Babbl] Skipping paste (re-triggered during transcription)")
+                    Log.general.info("Skipping paste (re-triggered during transcription)")
                     isTranscribing = false
-                    // Don't change overlay phase — new recording is already controlling it
                     return
                 }
 
-                // Small delay to ensure target app has focus before pasting
-                try await Task.sleep(nanoseconds: 200_000_000) // 200ms
+                guard !cleanedText.isEmpty else {
+                    Log.general.warning("Transcription produced empty text, nothing to paste")
+                    isTranscribing = false
+                    overlayPhase = .noSpeech
+                    let phaseAtSet = overlayPhase
+                    try await Task.sleep(nanoseconds: 3_000_000_000)
+                    if overlayPhase == phaseAtSet {
+                        overlayPhase = .hidden
+                    }
+                    return
+                }
 
-                print("[Babbl] Inserting text into active app...")
-                print("[Babbl] Accessibility trusted: \(AXIsProcessTrusted())")
+                // Delay to ensure target app has regained focus before pasting
+                try await Task.sleep(nanoseconds: 400_000_000) // 400ms
+
+                Log.general.info("Inserting text, accessibility: \(AXIsProcessTrusted())")
                 let didPaste = textInserter.insertText(cleanedText)
-                print("[Babbl] Text insertion completed (pasted: \(didPaste))")
+                Log.general.info("Text insertion completed (pasted: \(didPaste))")
 
                 isTranscribing = false
                 overlayPhase = didPaste ? .success : .failure
@@ -213,18 +237,16 @@ final class AppState: ObservableObject {
                 let dismissDelay: UInt64 = didPaste ? 2_000_000_000 : 5_000_000_000
                 let phaseAtSet = overlayPhase
                 try await Task.sleep(nanoseconds: dismissDelay)
-                // Only dismiss if phase hasn't changed (e.g. new recording started)
                 if overlayPhase == phaseAtSet {
                     overlayPhase = .hidden
                 }
             } catch {
                 errorMessage = "Transcription failed: \(error.localizedDescription)"
-                print("[Babbl] ERROR during transcription: \(error)")
+                Log.general.error("Transcription failed: \(error.localizedDescription)")
                 isTranscribing = false
 
                 if !shouldSkipPaste {
                     overlayPhase = .failure
-                    // Auto-dismiss after 5s
                     let phaseAtSet = overlayPhase
                     try? await Task.sleep(nanoseconds: 5_000_000_000)
                     if overlayPhase == phaseAtSet {
@@ -238,18 +260,18 @@ final class AppState: ObservableObject {
     func loadModel() {
         guard !isModelLoaded && !isModelDownloading else { return }
         isModelDownloading = true
-        print("[Babbl] Loading model: \(selectedModel.rawValue)...")
+        Log.general.info("Loading model: \(self.selectedModel.rawValue)")
 
         Task {
             do {
                 try await transcriber.loadModel(selectedModel)
                 isModelLoaded = true
                 isModelDownloading = false
-                print("[Babbl] Model loaded successfully: \(selectedModel.rawValue)")
+                Log.general.info("Model loaded: \(self.selectedModel.rawValue)")
             } catch {
                 errorMessage = "Failed to load model: \(error.localizedDescription)"
                 isModelDownloading = false
-                print("[Babbl] ERROR loading model: \(error)")
+                Log.general.error("Failed to load model: \(error.localizedDescription)")
             }
         }
     }
@@ -260,18 +282,18 @@ final class AppState: ObservableObject {
         isModelLoaded = false
         isModelDownloading = true
         errorMessage = nil
-        print("[Babbl] Switching model to: \(model.rawValue)...")
+        Log.general.info("Switching model to: \(model.rawValue)")
 
         Task {
             do {
                 try await transcriber.loadModel(model)
                 isModelLoaded = true
                 isModelDownloading = false
-                print("[Babbl] Model switched successfully to: \(model.rawValue)")
+                Log.general.info("Model switched to: \(model.rawValue)")
             } catch {
                 errorMessage = "Failed to load model: \(error.localizedDescription)"
                 isModelDownloading = false
-                print("[Babbl] ERROR switching model: \(error)")
+                Log.general.error("Failed to switch model: \(error.localizedDescription)")
             }
         }
     }

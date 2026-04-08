@@ -1,9 +1,10 @@
 import Cocoa
 import Carbon.HIToolbox
+import os.log
 
 final class TextInserter {
     enum OutputMode {
-        case typing      // Simulate keystrokes via CGEvent (types into active app)
+        case typing      // Paste into active app via clipboard + Cmd+V
         case clipboard   // Copy to clipboard only
     }
 
@@ -13,26 +14,25 @@ final class TextInserter {
     /// Inserts text into the active app. Returns `true` if paste was simulated, `false` if clipboard-only.
     @discardableResult
     func insertText(_ text: String) -> Bool {
-        print("[Babbl:TextInserter] insertText called, mode: \(mode), text length: \(text.count)")
+        Log.textInserter.info("insertText called, mode: \(String(describing: self.mode))")
 
         switch mode {
         case .typing:
             return typeText(text)
         case .clipboard:
             ClipboardManager.copy(text)
-            print("[Babbl:TextInserter] Text copied to clipboard (clipboard-only mode)")
+            Log.textInserter.info("Text copied to clipboard (clipboard-only mode)")
             return false
         }
     }
 
-    // MARK: - Typing Simulation
+    // MARK: - Text Insertion
 
     private func typeText(_ text: String) -> Bool {
         let isTrusted = AXIsProcessTrusted()
-        print("[Babbl:TextInserter] AXIsProcessTrusted: \(isTrusted)")
 
         guard isTrusted else {
-            print("[Babbl:TextInserter] No accessibility permission, falling back to clipboard")
+            Log.textInserter.warning("No accessibility permission, falling back to clipboard")
             ClipboardManager.copy(text)
             if !hasShownAccessibilityAlert {
                 hasShownAccessibilityAlert = true
@@ -41,30 +41,23 @@ final class TextInserter {
             return false
         }
 
-        // Save what's currently on the clipboard
+        // Use clipboard + Cmd+V — works reliably across all apps
         let previousClipboard = ClipboardManager.read()
-        print("[Babbl:TextInserter] Saved previous clipboard (\(previousClipboard?.count ?? 0) chars)")
 
-        // Set clipboard to our text
         ClipboardManager.copy(text)
-        print("[Babbl:TextInserter] Set clipboard to transcribed text")
 
         // Small delay to ensure clipboard is set
         usleep(50_000) // 50ms
 
-        // Check which app is frontmost right now
-        let frontApp = NSWorkspace.shared.frontmostApplication
-        print("[Babbl:TextInserter] Current frontmost app: \(frontApp?.localizedName ?? "none") (pid: \(frontApp?.processIdentifier ?? 0))")
-
-        // Simulate Cmd+V to paste
         simulatePaste()
-        print("[Babbl:TextInserter] Cmd+V paste simulated")
 
-        // Restore previous clipboard content after a delay
-        if let previous = previousClipboard {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        // Restore previous clipboard quickly to minimize exposure window
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if let previous = previousClipboard {
                 ClipboardManager.copy(previous)
-                print("[Babbl:TextInserter] Previous clipboard restored")
+            } else {
+                // Clear clipboard so transcribed text doesn't linger
+                NSPasteboard.general.clearContents()
             }
         }
 
@@ -74,15 +67,12 @@ final class TextInserter {
     private func simulatePaste() {
         let source = CGEventSource(stateID: .hidSystemState)
 
-        // Key down: Cmd+V
         let keyDown = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(kVK_ANSI_V), keyDown: true)
         keyDown?.flags = .maskCommand
         keyDown?.post(tap: .cghidEventTap)
 
-        // Small delay between key down and up
         usleep(10_000) // 10ms
 
-        // Key up: Cmd+V
         let keyUp = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(kVK_ANSI_V), keyDown: false)
         keyUp?.flags = .maskCommand
         keyUp?.post(tap: .cghidEventTap)
@@ -110,16 +100,14 @@ final class TextInserter {
     }
 
     /// Triggers the system accessibility prompt which auto-adds Babbl to the list.
-    /// The user still needs to toggle the switch ON in System Settings.
     static func requestAccessibilityPermission() {
         if AXIsProcessTrusted() {
-            print("[Babbl:TextInserter] Accessibility already granted, no prompt needed")
+            Log.textInserter.info("Accessibility already granted")
             return
         }
 
-        print("[Babbl:TextInserter] Requesting accessibility — triggering system prompt to auto-add app to list...")
+        Log.textInserter.info("Requesting accessibility permission")
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
-        let trusted = AXIsProcessTrustedWithOptions(options)
-        print("[Babbl:TextInserter] System prompt triggered, current status: \(trusted)")
+        _ = AXIsProcessTrustedWithOptions(options)
     }
 }
