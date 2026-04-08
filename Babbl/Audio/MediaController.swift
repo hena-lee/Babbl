@@ -3,12 +3,58 @@ import os.log
 
 /// Pauses and resumes system media playback by simulating the media play/pause key.
 /// Uses NSEvent.systemDefined which is App Store safe and requires no special entitlements.
+/// Checks if media is actually playing before sending keys to avoid launching Music.app.
 final class MediaController {
     private var didPauseMedia = false
 
+    // MARK: - MediaRemote Integration
+
+    private typealias MRNowPlayingIsPlayingFunc =
+        @convention(c) (DispatchQueue, @escaping (Bool) -> Void) -> Void
+
+    private static let mediaRemoteBundle: CFBundle? = {
+        let path = "/System/Library/PrivateFrameworks/MediaRemote.framework"
+        guard let url = CFURLCreateWithFileSystemPath(
+            kCFAllocatorDefault, path as CFString, CFURLPathStyle.cfurlposixPathStyle, true
+        ) else { return nil }
+        return CFBundleCreate(kCFAllocatorDefault, url)
+    }()
+
+    /// Checks whether any app is currently playing media via the system Now Playing API.
+    private static func isMediaPlaying() -> Bool {
+        guard let bundle = mediaRemoteBundle,
+              let pointer = CFBundleGetFunctionPointerForName(
+                  bundle, "MRMediaRemoteGetNowPlayingApplicationIsPlaying" as CFString
+              ) else {
+            Log.audio.warning("MediaRemote not available, skipping media check")
+            return false
+        }
+
+        let function = unsafeBitCast(pointer, to: MRNowPlayingIsPlayingFunc.self)
+
+        let semaphore = DispatchSemaphore(value: 0)
+        var isPlaying = false
+
+        function(DispatchQueue.global(qos: .userInteractive)) { playing in
+            isPlaying = playing
+            semaphore.signal()
+        }
+
+        let result = semaphore.wait(timeout: .now() + 0.5)
+        if result == .timedOut {
+            Log.audio.warning("MediaRemote check timed out")
+            return false
+        }
+        return isPlaying
+    }
+
     /// Sends a media play/pause key press to pause any currently playing media.
-    /// Tracks that we initiated the pause so `resumeIfPaused()` knows to resume.
+    /// Only pauses if media is actually playing, to avoid launching Music.app.
     func pauseMedia() {
+        guard Self.isMediaPlaying() else {
+            Log.audio.info("No media playing, skipping pause")
+            return
+        }
         Self.sendPlayPauseKey()
         didPauseMedia = true
         Log.audio.info("Sent media pause key")
